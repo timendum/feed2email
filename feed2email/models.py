@@ -9,7 +9,7 @@ class Feed:
 
     id: int
     url: str
-    recipient: str
+    recipient: str | None
     dedup_key: str  # 'id' | 'link' | 'title'
     format: str  # 'text' | 'html'
     item_date: bool

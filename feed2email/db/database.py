@@ -9,6 +9,7 @@ import platformdirs
 
 from feed2email.models import Feed
 
+
 def _default_db_path() -> Path:
     """Resolve the default database path using platformdirs."""
     data_dir = Path(platformdirs.user_data_dir("feed2email"))
@@ -146,9 +147,7 @@ class Database:
         Returns:
             The value as a string, or None if the key is not set.
         """
-        cursor = self.connection.execute(
-            "SELECT value FROM config WHERE key = ?", (key,)
-        )
+        cursor = self.connection.execute("SELECT value FROM config WHERE key = ?", (key,))
         row = cursor.fetchone()
         return row[0] if row is not None else None
 
@@ -190,10 +189,10 @@ class Database:
     def add_feed(
         self,
         url: str,
-        recipient: str,
-        dedup_key: str,
-        format: str,
-        item_date: bool,
+        dedup_key: str = "id",
+        format: str = "text",
+        item_date: bool = False,
+        recipient: str | None = None,
     ) -> Feed:
         """Add a new feed to the database.
 
@@ -223,7 +222,7 @@ class Database:
 
         return self._row_to_feed(row)
 
-    def remove_feed(self, feed_ref: str) -> bool:
+    def remove_feed(self, feed_ref: str | int) -> bool:
         """Remove a feed and its associated seen items from the database.
 
         Args:
@@ -252,9 +251,7 @@ class Database:
         """
         query = (
             "SELECT id, url, recipient, dedup_key, format, item_date, paused, created_at "
-            "FROM feeds "
-            + ("" if include_paused else "WHERE paused = 0 ")
-            + "ORDER BY id"
+            "FROM feeds " + ("" if include_paused else "WHERE paused = 0 ") + "ORDER BY id"
         )
         cursor = self.connection.execute(query)
 
