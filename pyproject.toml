@@ -1,0 +1,26 @@
+[project]
+name = "feed2email"
+version = "0.1.0"
+description = "Monitor RSS/Atom feeds and deliver new items via email"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "click",
+    "feedendum",
+    "platformdirs",
+    "jinja2",
+]
+
+[project.scripts]
+feed2email = "feed2email.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "hypothesis>=6.100",
+    "pytest-mock>=3.12",
+]
