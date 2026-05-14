@@ -1,5 +1,3 @@
-"""Database layer for feed2email using SQLite."""
-
 import sqlite3
 from datetime import datetime
 from importlib.resources import files
@@ -189,16 +187,16 @@ class Database:
     def add_feed(
         self,
         url: str,
-        dedup_key: str = "id",
-        format: str = "text",
-        item_date: bool = False,
-        recipient: str | None = None,
+        recipient: str | None,
+        dedup_key: str,
+        format: str,
+        item_date: bool,
     ) -> Feed:
         """Add a new feed to the database.
 
         Args:
             url: The feed URL.
-            recipient: The recipient email address (optional).
+            recipient: The recipient email address, or None to use default-recipient.
             dedup_key: Key to use ('id', 'link', or 'title').
             format: Email format ('text' or 'html').
             item_date: Whether to use item publication date for email Date header.

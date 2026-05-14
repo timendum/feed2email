@@ -9,7 +9,7 @@ from feed2email.db.database import Database, _default_db_path
 
 
 def add_feed(db: Database) -> Feed:
-    return db.add_feed("https://example.com/feed.xml", "id", "text", False, "u@e.com")
+    return db.add_feed("https://example.com/feed.xml", "u@e.com", "id", "text", False)
 
 
 class TestDatabaseInit:
@@ -158,12 +158,20 @@ class TestFeed:
         assert feed.id >= 1
         assert feed.created_at is not None
 
-    def test_add_feed_optional(self, db: Database):
+    def test_add_feed_all_params_required(self, db: Database):
         feed = db.add_feed(
-            url="https://example.com/feed.xml",
+            url="https://example.com/feed2.xml",
+            recipient="other@example.com",
+            dedup_key="link",
+            format="html",
+            item_date=True,
         )
 
-        assert feed.url == "https://example.com/feed.xml"
+        assert feed.url == "https://example.com/feed2.xml"
+        assert feed.recipient == "other@example.com"
+        assert feed.dedup_key == "link"
+        assert feed.format == "html"
+        assert feed.item_date is True
         assert feed.id >= 1
         assert feed.created_at is not None
 
@@ -221,8 +229,8 @@ class TestFeed:
         assert feeds == []
 
     def test_get_feeds(self, db: Database):
-        db.add_feed("https://a.com/feed", "id", "text", False, "a@a.com")
-        feed2 = db.add_feed("https://b.com/feed", "link", "html", True, "b@b.com")
+        db.add_feed("https://a.com/feed", "a@a.com", "id", "text", False)
+        feed2 = db.add_feed("https://b.com/feed", "b@b.com", "link", "html", True)
         db.set_feed_paused(feed2.id, True)
 
         feeds = db.get_feeds(include_paused=True)
@@ -302,8 +310,8 @@ class TestFeed:
         db.mark_seen(feed.id, "item-1", url="https://example.com/post/1")  # No error
 
     def test_is_seen_different_feeds(self, db: Database):
-        feed1 = db.add_feed("https://example.com/feed1.xml")
-        feed2 = db.add_feed("https://example.com/feed2.xml")
+        feed1 = db.add_feed("https://example.com/feed1.xml", "u@e.com", "id", "text", False)
+        feed2 = db.add_feed("https://example.com/feed2.xml", "u@e.com", "id", "text", False)
 
         db.mark_seen(feed1.id, "item-1")
 
