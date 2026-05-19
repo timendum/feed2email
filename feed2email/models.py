@@ -3,11 +3,20 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+VALID_CONFIG_KEYS = [
+    "smtp.host",
+    "smtp.port",
+    "smtp.from",
+    "smtp.user",
+    "smtp.password",
+    "smtp.encryption",
+    "default-recipient",
+]
+
 REQUIRED_SMTP_KEYS = [
     "smtp.host",
     "smtp.port",
-    "smtp.user",
-    "smtp.password",
+    "smtp.from",
     "smtp.encryption",
 ]
 
@@ -32,9 +41,10 @@ class SmtpConfig:
 
     host: str
     port: int
-    username: str
-    password: str
+    from_address: str
     encryption: str  # 'none' | 'starttls' | 'ssl'
+    username: str | None = None
+    password: str | None = None
 
 
 @dataclass
@@ -57,3 +67,31 @@ class FetchResult:
     feed_title: str
     error: str | None = None
 
+
+@dataclass
+class EmailMessage:
+    """An email message ready to be sent."""
+
+    recipient: str
+    subject: str
+    body: str
+    content_type: str  # 'text/plain' or 'text/html'
+    date: datetime
+
+
+@dataclass
+class SendResult:
+    """Result of sending an email."""
+
+    success: bool
+    error: str | None = None
+
+
+@dataclass
+class RunResult:
+    """Result of a full run cycle."""
+
+    feeds_processed: int = 0
+    feeds_failed: int = 0
+    items_sent: int = 0
+    items_failed: int = 0

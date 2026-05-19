@@ -35,9 +35,10 @@ class ConfigManager:
         return SmtpConfig(
             host=config["smtp.host"],
             port=int(config["smtp.port"]),
-            username=config["smtp.user"],
-            password=config["smtp.password"],
+            from_address=config["smtp.from"],
             encryption=config["smtp.encryption"],
+            username=config.get("smtp.user"),
+            password=config.get("smtp.password"),
         )
 
     def get_default_recipient(self) -> str | None:
@@ -58,6 +59,10 @@ class ConfigManager:
             valid_values = ("none", "starttls", "ssl")
             if value not in valid_values:
                 return False, f"Encryption must be one of: {', '.join(valid_values)}"
+
+        elif key == "smtp.from":
+            if not validate_email(value):
+                return False, "Invalid email address format"
 
         elif key == "default-recipient":
             if not validate_email(value):
