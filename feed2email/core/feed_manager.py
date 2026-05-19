@@ -1,7 +1,7 @@
 import logging
 
 from feed2email.db.database import Database
-from feed2email.fetcher.feed_fetcher import FeedFetcher
+from feed2email.fetcher.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
 from feed2email.models import Feed
 from feed2email.validation import validate_email, validate_url
 
@@ -17,7 +17,8 @@ class FeedManager:
 
     def __init__(self, db: Database) -> None:
         self._db = db
-        self._fetcher = FeedFetcher()
+        user_agent = db.get_config("user-agent") or DEFAULT_USER_AGENT
+        self._fetcher = FeedFetcher(user_agent=user_agent)
 
     def add_feed(
         self,

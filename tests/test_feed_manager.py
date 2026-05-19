@@ -278,6 +278,15 @@ class TestUnpauseFeed:
 class TestResolveRecipient:
     """Tests for FeedManager.resolve_recipient() — run-time recipient resolution."""
 
+    def test_feed_manager_uses_default_user_agent(self, db: Database):
+        manager = FeedManager(db)
+        assert manager._fetcher._session.headers["User-Agent"] == "feed2email"
+
+    def test_feed_manager_uses_custom_user_agent_from_config(self, db: Database):
+        db.set_config("user-agent", "MyCustomBot/1.0")
+        manager = FeedManager(db)
+        assert manager._fetcher._session.headers["User-Agent"] == "MyCustomBot/1.0"
+
     def test_resolve_explicit_recipient(self, db: Database):
         manager = FeedManager(db)
         feed = manager.add_feed(

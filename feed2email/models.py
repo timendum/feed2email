@@ -11,6 +11,7 @@ VALID_CONFIG_KEYS = [
     "smtp.password",
     "smtp.encryption",
     "default-recipient",
+    "user-agent",
 ]
 
 REQUIRED_SMTP_KEYS = [

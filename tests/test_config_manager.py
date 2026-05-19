@@ -135,6 +135,23 @@ class TestSmtp:
         assert config_mgr.validate_value("smtp.user", "user@mail.com") == (True, None)
         assert config_mgr.validate_value("smtp.password", "p@ss!") == (True, None)
 
+    def test_user_agent_valid(self, config_mgr: ConfigManager) -> None:
+        assert config_mgr.validate_value("user-agent", "MyBot/1.0") == (True, None)
+        assert config_mgr.validate_value("user-agent", "feed2email") == (True, None)
+
+    def test_user_agent_empty_invalid(self, config_mgr: ConfigManager) -> None:
+        is_valid, error = config_mgr.validate_value("user-agent", "")
+        assert is_valid is False
+        assert error is not None
+
+        is_valid, error = config_mgr.validate_value("user-agent", "   ")
+        assert is_valid is False
+        assert error is not None
+
+    def test_user_agent_stored_and_retrieved(self, config_mgr: ConfigManager) -> None:
+        config_mgr.set("user-agent", "CustomAgent/2.0")
+        assert config_mgr.get("user-agent") == "CustomAgent/2.0"
+
     def test_all_missing_when_empty(self, config_mgr: ConfigManager) -> None:
         missing = config_mgr.get_missing_smtp_keys()
         assert set(missing) == {

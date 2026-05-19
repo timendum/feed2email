@@ -68,6 +68,10 @@ class ConfigManager:
             if not validate_email(value):
                 return False, "Invalid email address format"
 
+        elif key == "user-agent":
+            if not value.strip():
+                return False, "User-Agent cannot be empty"
+
         return True, None
 
     def get_missing_smtp_keys(self) -> list[str]:
