@@ -31,6 +31,18 @@ class EmailSender:
             msg["Subject"] = message.subject
             msg["Date"] = format_datetime(message.date)
 
+            if message.user_agent:
+                msg["User-Agent"] = message.user_agent
+            if message.feed_id:
+                msg["List-ID"] = message.feed_id
+            msg["List-Post"] = "NO"  # From rfc2369 3.4
+            if message.feed_id:
+                msg["X-Feed-URL"] = message.feed_id
+            if message.item_url:
+                msg["X-Feed-Item-URL"] = message.item_url
+            if message.item_id:
+                msg["X-Feed-Item-ID"] = message.item_id
+
             connection = self._connect()
             try:
                 if self.config.username and self.config.password:

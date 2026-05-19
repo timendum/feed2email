@@ -78,6 +78,10 @@ class EmailMessage:
     body: str
     content_type: str  # 'text/plain' or 'text/html'
     date: datetime
+    feed_id: str | None = None
+    item_url: str | None = None
+    item_id: str | None = None
+    user_agent: str | None = None
 
 
 @dataclass

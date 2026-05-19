@@ -236,3 +236,175 @@ class TestEmailSenderSend:
         raw_message = call_args[0][2]
 
         assert "Content-Type: text/html" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_user_agent_header_included(self, mock_smtp_class, smtp_config, email_message):
+        """User-Agent header is included when user_agent is set."""
+        email_message.user_agent = "feed2email/1.0"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "User-Agent: feed2email/1.0" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_user_agent_header_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
+        """User-Agent header is not included when user_agent is None."""
+        email_message.user_agent = None
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "User-Agent:" not in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_list_id_header_from_feed_id(self, mock_smtp_class, smtp_config, email_message):
+        """List-ID header is set to the feed ID (URL)."""
+        email_message.feed_id = "https://example.com/feed.xml"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "List-ID: https://example.com/feed.xml" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_list_id_header_omitted_when_no_feed_id(self, mock_smtp_class, smtp_config, email_message):
+        """List-ID header is not included when feed_id is None."""
+        email_message.feed_id = None
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "List-ID:" not in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_list_post_header_always_no(self, mock_smtp_class, smtp_config, email_message):
+        """List-Post header is always set to NO."""
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "List-Post: NO" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_x_feed_url_header(self, mock_smtp_class, smtp_config, email_message):
+        """X-Feed-URL header is set to the feed ID (URL)."""
+        email_message.feed_id = "https://blog.example.com/rss"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "X-Feed-URL: https://blog.example.com/rss" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_x_feed_item_url_header(self, mock_smtp_class, smtp_config, email_message):
+        """X-Feed-Item-URL header is set to the item URL."""
+        email_message.item_url = "https://blog.example.com/post/123"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "X-Feed-Item-URL: https://blog.example.com/post/123" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_x_feed_item_url_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
+        """X-Feed-Item-URL header is not included when item_url is None."""
+        email_message.item_url = None
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "X-Feed-Item-URL:" not in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_x_feed_item_id_header(self, mock_smtp_class, smtp_config, email_message):
+        """X-Feed-Item-ID header is set to the item ID."""
+        email_message.item_id = "urn:uuid:12345-abcde"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "X-Feed-Item-ID: urn:uuid:12345-abcde" in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_x_feed_item_id_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
+        """X-Feed-Item-ID header is not included when item_id is None."""
+        email_message.item_id = None
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "X-Feed-Item-ID:" not in raw_message
+
+    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    def test_all_feed_headers_together(self, mock_smtp_class, smtp_config, email_message):
+        """All feed-related headers are present when all fields are populated."""
+        email_message.user_agent = "feed2email/2.0"
+        email_message.feed_id = "https://example.com/feed.xml"
+        email_message.item_url = "https://example.com/post/1"
+        email_message.item_id = "post-1"
+        mock_conn = MagicMock()
+        mock_smtp_class.return_value = mock_conn
+
+        sender = EmailSender(smtp_config)
+        sender.send(email_message)
+
+        call_args = mock_conn.sendmail.call_args
+        raw_message = call_args[0][2]
+
+        assert "User-Agent: feed2email/2.0" in raw_message
+        assert "List-ID: https://example.com/feed.xml" in raw_message
+        assert "List-Post: NO" in raw_message
+        assert "X-Feed-URL: https://example.com/feed.xml" in raw_message
+        assert "X-Feed-Item-URL: https://example.com/post/1" in raw_message
+        assert "X-Feed-Item-ID: post-1" in raw_message
