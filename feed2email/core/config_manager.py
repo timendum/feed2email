@@ -1,6 +1,8 @@
 from feed2email.db.database import Database
-from feed2email.models import REQUIRED_SMTP_KEYS, SmtpConfig
+from feed2email.models import REQUIRED_KEYS, SmtpConfig
 from feed2email.validation import validate_email, validate_port
+
+_REQUIRED_SMTP_KEYS = ["smtp.host", "smtp.port", "smtp.from", "smtp.encryption"]
 
 
 class ConfigManager:
@@ -21,6 +23,17 @@ class ConfigManager:
             return True, None
         return valid, error
 
+    def unset(self, key: str) -> tuple[bool, str | None]:
+        """Remove a config value.
+
+        Returns (True, None) on success, (False, error_message) on failure.
+        """
+        if key in REQUIRED_KEYS:
+            return False, f"Cannot unset required key '{key}'"
+        if self.db.delete_config(key):
+            return True, None
+        return True, None  # key was not set, still a valid operation
+
     def list_all(self) -> dict[str, str]:
         """Return all configured key-value pairs."""
         return self.db.get_all_config()
@@ -28,7 +41,7 @@ class ConfigManager:
     def get_smtp(self) -> SmtpConfig | None:
         """Return valid SmtpConfig or None."""
         config = self.db.get_all_config()
-        for key in REQUIRED_SMTP_KEYS:
+        for key in _REQUIRED_SMTP_KEYS:
             if key not in config:
                 return None
 
@@ -77,4 +90,4 @@ class ConfigManager:
     def get_missing_smtp_keys(self) -> list[str]:
         """Return list of required but not set SMTP keys."""
         config = self.db.get_all_config()
-        return [key for key in REQUIRED_SMTP_KEYS if key not in config]
+        return [key for key in _REQUIRED_SMTP_KEYS if key not in config]

@@ -167,6 +167,19 @@ class Database:
         )
         self.connection.commit()
 
+    def delete_config(self, key: str) -> bool:
+        """Delete a configuration value by key.
+
+        Args:
+            key: The configuration key to delete.
+
+        Returns:
+            True if the key was found and deleted, False if not found.
+        """
+        cursor = self.connection.execute("DELETE FROM config WHERE key = ?", (key,))
+        self.connection.commit()
+        return cursor.rowcount > 0
+
     def get_all_config(self) -> dict[str, str]:
         """Get all configuration key-value pairs.
 

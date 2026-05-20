@@ -3,23 +3,21 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-VALID_CONFIG_KEYS = [
+REQUIRED_KEYS = (
     "smtp.host",
     "smtp.port",
     "smtp.from",
+    "smtp.encryption",
+    "default-recipient",
+)
+
+VALID_CONFIG_KEYS = (
+    *REQUIRED_KEYS,
     "smtp.user",
     "smtp.password",
     "smtp.encryption",
-    "default-recipient",
     "user-agent",
-]
-
-REQUIRED_SMTP_KEYS = [
-    "smtp.host",
-    "smtp.port",
-    "smtp.from",
-    "smtp.encryption",
-]
+)
 
 
 @dataclass
