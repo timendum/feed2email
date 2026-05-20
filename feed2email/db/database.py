@@ -24,7 +24,7 @@ class Database:
             path: Path to the SQLite database file.
             If None, uses the platform default user data directory.
         """
-        self.path = path if path is not None else _default_db_path()
+        self.path: Path = path if path is not None else _default_db_path()
         self._lock_conn: sqlite3.Connection | None = None
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -39,6 +39,7 @@ class Database:
 
     def acquire_lock(self) -> bool:
         """Acquire an exclusive lock for single-instance enforcement.
+
         Returns:
             True if the lock was acquired successfully,
             False if another instance already holds the lock.
@@ -46,13 +47,17 @@ class Database:
         if self._lock_conn is not None:
             return True
 
+        lock_path = self.path.with_suffix(".lock.db")
         try:
-            lock_conn = sqlite3.connect(str(self.path), timeout=0)
-            lock_conn.execute("PRAGMA journal_mode = WAL")
-            lock_conn.execute("BEGIN EXCLUSIVE")
-            self._lock_conn = lock_conn
+            conn = sqlite3.connect(str(lock_path), timeout=0)
+            conn.execute("BEGIN EXCLUSIVE")
+            self._lock_conn = conn
             return True
         except sqlite3.OperationalError:
+            try:
+                conn.close()
+            except Exception:
+                pass
             return False
 
     def release_lock(self) -> None:
