@@ -91,3 +91,13 @@ class ConfigManager:
         """Return list of required but not set SMTP keys."""
         config = self.db.get_all_config()
         return [key for key in _REQUIRED_SMTP_KEYS if key not in config]
+
+    def is_setup_complete(self) -> bool:
+        """Return True only when all Required_Configuration keys have non-empty values."""
+        config = self.db.get_all_config()
+        return all(key in config and config[key].strip() for key in REQUIRED_KEYS)
+
+    def get_missing_required_keys(self) -> list[str]:
+        """Return the list of Required_Configuration keys that are missing or empty."""
+        config = self.db.get_all_config()
+        return [key for key in REQUIRED_KEYS if key not in config or not config[key].strip()]
