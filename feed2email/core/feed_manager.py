@@ -1,7 +1,7 @@
 import logging
 
-from feed2email.db.database import Database
-from feed2email.fetcher.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
+from feed2email.database import Database
+from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
 from feed2email.models import Feed
 from feed2email.validation import validate_email, validate_url
 

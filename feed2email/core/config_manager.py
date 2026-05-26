@@ -1,4 +1,4 @@
-from feed2email.db.database import Database
+from feed2email.database import Database
 from feed2email.models import REQUIRED_KEYS, SmtpConfig
 from feed2email.validation import validate_email, validate_port
 

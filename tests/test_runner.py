@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from feed2email.core.runner import Runner
-from feed2email.db.database import Database
+from feed2email.database import Database
 from feed2email.models import (
     EmailMessage,
     Feed,

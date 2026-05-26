@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from feed2email.mailer.email_sender import EmailSender
+from feed2email.email_sender import EmailSender
 from feed2email.models import EmailMessage, SmtpConfig
 
 
@@ -49,7 +49,7 @@ def email_message():
 class TestEmailSenderSend:
     """Tests for EmailSender.send() method."""
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_starttls_connection_flow(self, mock_smtp_class, smtp_config, email_message):
         """STARTTLS: creates SMTP, calls starttls(), login, sendmail, quit."""
         smtp_config.encryption = "starttls"
@@ -67,7 +67,7 @@ class TestEmailSenderSend:
         mock_conn.sendmail.assert_called_once()
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP_SSL")
+    @patch("feed2email.email_sender.smtplib.SMTP_SSL")
     def test_ssl_connection_flow(self, mock_smtp_ssl_class, smtp_config, email_message):
         """SSL: creates SMTP_SSL, login, sendmail, quit (no starttls)."""
         smtp_config.encryption = "ssl"
@@ -85,7 +85,7 @@ class TestEmailSenderSend:
         mock_conn.sendmail.assert_called_once()
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_none_encryption_flow(self, mock_smtp_class, smtp_config, email_message):
         """No encryption: creates SMTP without starttls."""
         smtp_config.encryption = "none"
@@ -104,7 +104,7 @@ class TestEmailSenderSend:
         mock_conn.sendmail.assert_called_once()
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_no_auth_skips_login(self, mock_smtp_class, smtp_config_no_auth, email_message):
         """When username/password are None, login is not called."""
         mock_conn = MagicMock()
@@ -120,7 +120,7 @@ class TestEmailSenderSend:
         mock_conn.sendmail.assert_called_once()
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_no_auth_uses_from_address_in_sendmail(
         self, mock_smtp_class, smtp_config_no_auth, email_message
     ):
@@ -135,7 +135,7 @@ class TestEmailSenderSend:
         assert call_args[0][0] == "sender@example.com"
         assert call_args[0][1] == "recipient@example.com"
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_from_address_used_in_header(self, mock_smtp_class, smtp_config, email_message):
         """From header uses from_address, not username."""
         mock_conn = MagicMock()
@@ -148,7 +148,7 @@ class TestEmailSenderSend:
         raw_message = call_args[0][2]
         assert "From: sender@example.com" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_from_address_used_as_envelope_sender(
         self, mock_smtp_class, smtp_config, email_message
     ):
@@ -162,7 +162,7 @@ class TestEmailSenderSend:
         call_args = mock_conn.sendmail.call_args
         assert call_args[0][0] == "sender@example.com"
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_connection_failure_returns_error(self, mock_smtp_class, smtp_config, email_message):
         """Connection failure returns SendResult with success=False."""
         mock_smtp_class.side_effect = ConnectionRefusedError("Connection refused")
@@ -173,7 +173,7 @@ class TestEmailSenderSend:
         assert result.success is False
         assert "Connection refused" in result.error
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_login_failure_returns_error(self, mock_smtp_class, smtp_config, email_message):
         """Login failure returns SendResult with success=False."""
         mock_conn = MagicMock()
@@ -187,7 +187,7 @@ class TestEmailSenderSend:
         assert result.error is not None
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_sendmail_rejection_returns_error(self, mock_smtp_class, smtp_config, email_message):
         """Message rejection returns SendResult with success=False."""
         mock_conn = MagicMock()
@@ -203,7 +203,7 @@ class TestEmailSenderSend:
         assert result.error is not None
         mock_conn.quit.assert_called_once()
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_email_headers_are_set_correctly(self, mock_smtp_class, smtp_config, email_message):
         """Email contains proper From, To, Subject, Date, Content-Type headers."""
         mock_conn = MagicMock()
@@ -222,7 +222,7 @@ class TestEmailSenderSend:
         assert "Date:" in raw_message
         assert "Content-Type: text/plain" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_html_content_type(self, mock_smtp_class, smtp_config, email_message):
         """HTML content type sets correct MIME subtype."""
         email_message.content_type = "text/html"
@@ -237,7 +237,7 @@ class TestEmailSenderSend:
 
         assert "Content-Type: text/html" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_user_agent_header_included(self, mock_smtp_class, smtp_config, email_message):
         """User-Agent header is included when user_agent is set."""
         email_message.user_agent = "feed2email/1.0"
@@ -252,7 +252,7 @@ class TestEmailSenderSend:
 
         assert "User-Agent: feed2email/1.0" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_user_agent_header_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
         """User-Agent header is not included when user_agent is None."""
         email_message.user_agent = None
@@ -267,7 +267,7 @@ class TestEmailSenderSend:
 
         assert "User-Agent:" not in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_list_id_header_from_feed_id(self, mock_smtp_class, smtp_config, email_message):
         """List-ID header is set to the feed ID (URL)."""
         email_message.feed_id = "https://example.com/feed.xml"
@@ -282,7 +282,7 @@ class TestEmailSenderSend:
 
         assert "List-ID: https://example.com/feed.xml" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_list_id_header_omitted_when_no_feed_id(self, mock_smtp_class, smtp_config, email_message):
         """List-ID header is not included when feed_id is None."""
         email_message.feed_id = None
@@ -297,7 +297,7 @@ class TestEmailSenderSend:
 
         assert "List-ID:" not in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_list_post_header_always_no(self, mock_smtp_class, smtp_config, email_message):
         """List-Post header is always set to NO."""
         mock_conn = MagicMock()
@@ -311,7 +311,7 @@ class TestEmailSenderSend:
 
         assert "List-Post: NO" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_x_feed_url_header(self, mock_smtp_class, smtp_config, email_message):
         """X-Feed-URL header is set to the feed ID (URL)."""
         email_message.feed_id = "https://blog.example.com/rss"
@@ -326,7 +326,7 @@ class TestEmailSenderSend:
 
         assert "X-Feed-URL: https://blog.example.com/rss" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_x_feed_item_url_header(self, mock_smtp_class, smtp_config, email_message):
         """X-Feed-Item-URL header is set to the item URL."""
         email_message.item_url = "https://blog.example.com/post/123"
@@ -341,7 +341,7 @@ class TestEmailSenderSend:
 
         assert "X-Feed-Item-URL: https://blog.example.com/post/123" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_x_feed_item_url_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
         """X-Feed-Item-URL header is not included when item_url is None."""
         email_message.item_url = None
@@ -356,7 +356,7 @@ class TestEmailSenderSend:
 
         assert "X-Feed-Item-URL:" not in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_x_feed_item_id_header(self, mock_smtp_class, smtp_config, email_message):
         """X-Feed-Item-ID header is set to the item ID."""
         email_message.item_id = "urn:uuid:12345-abcde"
@@ -371,7 +371,7 @@ class TestEmailSenderSend:
 
         assert "X-Feed-Item-ID: urn:uuid:12345-abcde" in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_x_feed_item_id_omitted_when_none(self, mock_smtp_class, smtp_config, email_message):
         """X-Feed-Item-ID header is not included when item_id is None."""
         email_message.item_id = None
@@ -386,7 +386,7 @@ class TestEmailSenderSend:
 
         assert "X-Feed-Item-ID:" not in raw_message
 
-    @patch("feed2email.mailer.email_sender.smtplib.SMTP")
+    @patch("feed2email.email_sender.smtplib.SMTP")
     def test_all_feed_headers_together(self, mock_smtp_class, smtp_config, email_message):
         """All feed-related headers are present when all fields are populated."""
         email_message.user_agent = "feed2email/2.0"

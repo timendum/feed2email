@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from feed2email.core.feed_manager import FeedManager
-from feed2email.db.database import Database
+from feed2email.database import Database
 
 
 @pytest.fixture

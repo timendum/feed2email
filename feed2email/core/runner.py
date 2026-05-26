@@ -3,11 +3,11 @@
 import logging
 from datetime import datetime, timezone
 
-from feed2email.db.database import Database
-from feed2email.fetcher.feed_fetcher import FeedFetcher
-from feed2email.mailer.email_sender import EmailSender
+from feed2email.database import Database
+from feed2email.feed_fetcher import FeedFetcher
+from feed2email.email_sender import EmailSender
 from feed2email.models import EmailMessage, Feed, FeedItem, RunResult
-from feed2email.renderer.template_renderer import TemplateRenderer
+from feed2email.template_renderer import TemplateRenderer
 
 logger = logging.getLogger(__name__)
 

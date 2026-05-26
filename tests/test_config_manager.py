@@ -1,7 +1,7 @@
 import pytest
 
 from feed2email.core.config_manager import ConfigManager
-from feed2email.db.database import Database
+from feed2email.database import Database
 from feed2email.models import SmtpConfig
 
 

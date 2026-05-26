@@ -5,7 +5,7 @@ from unittest.mock import patch, MagicMock
 import pytest
 
 from feed2email.core.feed_manager import FeedManager, FeedError
-from feed2email.db.database import Database
+from feed2email.database import Database
 from feed2email.models import FeedItem, FetchResult
 
 

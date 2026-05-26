@@ -6,7 +6,7 @@ from pathlib import Path
 
 import click
 
-from feed2email.db.database import Database
+from feed2email.database import Database
 from feed2email.core.config_manager import ConfigManager
 from feed2email.core.feed_manager import FeedError, FeedManager
 from feed2email.models import VALID_CONFIG_KEYS
@@ -368,9 +368,9 @@ def run(ctx, dry_run):
         user_agent = cm.get("user-agent") or "feed2email"
 
         # Instantiate dependencies
-        from feed2email.fetcher.feed_fetcher import FeedFetcher
-        from feed2email.mailer.email_sender import EmailSender
-        from feed2email.renderer.template_renderer import TemplateRenderer
+        from feed2email.feed_fetcher import FeedFetcher
+        from feed2email.email_sender import EmailSender
+        from feed2email.template_renderer import TemplateRenderer
 
         fetcher = FeedFetcher(user_agent=user_agent)
 

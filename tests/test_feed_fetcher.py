@@ -2,7 +2,7 @@
 
 from unittest.mock import patch, MagicMock
 
-from feed2email.fetcher.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
+from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
 
 
 class TestFeedFetcherUserAgent:

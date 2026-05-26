@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import pytest
 
 from feed2email.models import FeedItem
-from feed2email.renderer.template_renderer import TemplateRenderer
+from feed2email.template_renderer import TemplateRenderer
 
 
 @pytest.fixture
