@@ -1,6 +1,5 @@
-import requests
-
 import feedendum
+import requests
 from feedendum.exceptions import FeedParseError, FeedXMLError
 
 from feed2email.models import FeedItem, FetchResult
@@ -23,7 +22,7 @@ class FeedFetcher:
         """
         try:
             text = self._download(url)
-        except Exception as e:
+        except RuntimeError as e:
             return FetchResult(
                 success=False,
                 items=[],
@@ -33,7 +32,7 @@ class FeedFetcher:
 
         try:
             feed = self._parse(text)
-        except Exception as e:
+        except RuntimeError as e:
             return FetchResult(
                 success=False,
                 items=[],

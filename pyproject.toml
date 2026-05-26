@@ -5,28 +5,115 @@ description = "Monitor RSS/Atom feeds and deliver new items via email"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "click>=8.3",
-    "feedendum>=0.4",
-    "platformdirs>=4.9",
-    "jinja2>=3.1",
-    "requests>=2.31",
+  "click>=8.3",
+  "feedendum>=0.4",
+  "jinja2>=3.1",
+  "platformdirs>=4.9",
+  "requests>=2.31",
 ]
 
 [project.scripts]
 feed2email = "feed2email.cli:cli"
 
+[dependency-groups]
+dev = [
+  "hypothesis>=6.152",
+  "pytest>=9.0",
+  "pytest-mock>=3.15",
+  "ruff>=0.15",
+  "ty>=0.0.44",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[dependency-groups]
-dev = [
-    "pytest>=9.0",
-    "hypothesis>=6.152",
-    "pytest-mock>=3.15",
-    "ruff>=0.15",
-    "ty>=0.0.44",
-]
-
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+select = [
+  "F",
+  "E",
+  "W",
+  "I",
+  "N",
+  "UP",
+  "ASYNC",
+  "S",
+  "BLE",
+  "B",
+  "COM",
+  "C4",
+  "DTZ",
+  "T10",
+  "FA",
+  "ISC",
+  "ICN",
+  "LOG",
+  "G",
+  "INP",
+  "PIE",
+  "PYI",
+  "PT",
+  "Q",
+  "RSE",
+  "SLF",
+  "SLOT",
+  "TID",
+  "TC",
+  "INT",
+  "ARG",
+  "PTH",
+  "TD",
+  "FIX",
+  "PGH",
+  "PLC", "PLE",
+  "TRY004",
+  "TRY203",
+  "TRY400",
+  "TRY401",
+  "FLY",
+  "PERF",
+  "FURB",
+  "RUF",
+]
+ignore = [
+  "FURB110",
+  # "ANN401",
+  "COM812",
+  # "ISC001",
+  #   "TD003",
+  #   "FIX002",
+  #   "S101",
+  #   "PLR0913",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"feed2email/cli.py" = [
+  "PLC0415" # we have in method import to speed up
+]
+"tests/**/*.py" = [
+  "S101",
+  "ANN",
+  "S106",
+  "ARG",
+  "PLR2004",
+  "SLF001",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["feed2email"]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod"]
+
+[tool.ruff.lint.flake8-pytest-style]
+fixture-parentheses = false
+mark-parentheses = false
+
+[tool.ruff.lint.pylint]
+max-args = 7
+
+[tool.ruff.format]
+docstring-code-format = true

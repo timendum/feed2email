@@ -1,13 +1,13 @@
 """Unit tests for the Runner class."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
 import pytest
 
-from feed2email.runner import Runner
 from feed2email.db import Database
 from feed2email.models import EmailMessage, Feed, FeedItem, FetchResult, RunResult, SendResult
+from feed2email.runner import Runner
 
 
 @pytest.fixture
@@ -68,7 +68,7 @@ def _make_item(**kwargs) -> FeedItem:
         "title": "Test Item",
         "link": "http://example.com/item-1",
         "content": "<p>Content</p>",
-        "published": datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
+        "published": datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
     }
     defaults.update(kwargs)
     return FeedItem(**defaults)
@@ -345,7 +345,7 @@ class TestRunnerDateHeader:
     ):
         _make_feed(mock_db, item_date=False)
 
-        item = _make_item(published=datetime(2020, 1, 1, tzinfo=timezone.utc))
+        item = _make_item(published=datetime(2020, 1, 1, tzinfo=UTC))
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
@@ -361,7 +361,7 @@ class TestRunnerDateHeader:
     ):
         _make_feed(mock_db, item_date=True)
 
-        pub_date = datetime(2023, 6, 15, 10, 30, 0, tzinfo=timezone.utc)
+        pub_date = datetime(2023, 6, 15, 10, 30, 0, tzinfo=UTC)
         item = _make_item(published=pub_date)
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
@@ -393,7 +393,7 @@ class TestRunnerDateHeader:
         _make_feed(mock_db, item_date=True)
 
         # Naive datetime (no tzinfo)
-        naive_date = datetime(2023, 3, 1, 8, 0, 0)
+        naive_date = datetime(2023, 3, 1, 8, 0, 0)  # noqa: DTZ001
         item = _make_item(published=naive_date)
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
@@ -402,7 +402,7 @@ class TestRunnerDateHeader:
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
-        assert sent_message.date.tzinfo == timezone.utc
+        assert sent_message.date.tzinfo == UTC
         assert sent_message.date.year == 2023
 
 

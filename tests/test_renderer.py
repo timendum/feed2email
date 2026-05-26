@@ -1,6 +1,6 @@
 """Unit tests for the TemplateRenderer."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -123,7 +123,7 @@ class TestRender:
             title="Test Title",
             link="http://example.com/article",
             content="Article body text",
-            published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc),
+            published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=UTC),
         )
         result = renderer.render(item, "My Feed", "http://example.com/feed", "text")
         assert "Test Title" in result
@@ -139,7 +139,7 @@ class TestRender:
             title="Test Title",
             link="http://example.com/article",
             content="Article body text",
-            published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc),
+            published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=UTC),
         )
         result = renderer.render(item, "My Feed", "http://example.com/feed", "html")
         assert "Test Title" in result

@@ -37,7 +37,7 @@ class TemplateRenderer:
     """Renders feed items into email bodies using Jinja2 templates."""
 
     def __init__(self) -> None:
-        self._env = Environment(autoescape=False)
+        self._env = Environment(autoescape=True)
         self._text_template = self._env.from_string(_PLAIN_TEXT_TEMPLATE)
         self._html_template = self._env.from_string(_HTML_TEMPLATE)
 

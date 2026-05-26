@@ -1,6 +1,6 @@
 """Unit tests for FeedFetcher."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
 

@@ -1,11 +1,11 @@
 """Unit tests for FeedManager."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
-from feed2email.feed_manager import FeedManager, FeedError
 from feed2email.db import Database
+from feed2email.feed_manager import FeedError, FeedManager
 from feed2email.models import FeedItem, FetchResult
 
 
@@ -221,6 +221,7 @@ class TestPauseFeed:
         assert "paused" in msg.lower()
 
         feed = db.get_feed("https://example.com/feed.xml")
+        assert feed is not None
         assert feed.paused is True
 
     def test_pause_already_paused_feed(self, db: Database):
@@ -237,6 +238,7 @@ class TestPauseFeed:
         assert "paused" in msg.lower()
 
         updated = db.get_feed(feed.id)
+        assert updated is not None
         assert updated.paused is True
 
     def test_pause_nonexistent_feed_raises(self, db: Database):
@@ -256,6 +258,7 @@ class TestUnpauseFeed:
         assert "unpaused" in msg.lower()
 
         feed = db.get_feed("https://example.com/feed.xml")
+        assert feed is not None
         assert feed.paused is False
 
     def test_unpause_already_active_feed(self, db: Database):
@@ -272,6 +275,7 @@ class TestUnpauseFeed:
         assert "unpaused" in msg.lower()
 
         updated = db.get_feed(feed.id)
+        assert updated is not None
         assert updated.paused is False
 
     def test_unpause_nonexistent_feed_raises(self, db: Database):
@@ -312,6 +316,7 @@ class TestResolveRecipient:
         manager = FeedManager(db)
         feed = manager.add_feed(url="https://example.com/feed.xml")
         # Remove the default-recipient after adding the feed
+        assert db.connection is not None
         db.connection.execute("DELETE FROM config WHERE key = 'default-recipient'")
         db.connection.commit()
         with pytest.raises(FeedError, match="No recipient for feed"):

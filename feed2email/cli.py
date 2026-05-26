@@ -6,8 +6,8 @@ from pathlib import Path
 
 import click
 
-from feed2email.db import Database
 from feed2email.config_manager import ConfigManager
+from feed2email.db import Database
 from feed2email.feed_manager import FeedError, FeedManager
 from feed2email.models import VALID_CONFIG_KEYS
 
@@ -101,7 +101,7 @@ def config(ctx, key, value, unset):
                 raise click.ClickException("Cannot specify both a VALUE and --unset.")
             ok, error = cm.unset(key)
             if not ok:
-                raise click.ClickException(error)
+                raise click.ClickException(error or "Unknown error")
             if cm.get(key) is None:
                 click.echo(f"Unset {key}")
             return
@@ -132,7 +132,7 @@ def init(ctx):
         cm = ConfigManager(db)
 
         # Prompts for required keys
-        _PROMPTS = [
+        _prompts = [
             ("smtp.from", "From email address"),
             ("default-recipient", "Default recipient email"),
             ("smtp.host", "SMTP host"),
@@ -140,7 +140,7 @@ def init(ctx):
             ("smtp.encryption", "SMTP connection encryption (none/starttls/ssl)"),
         ]
 
-        for key, label in _PROMPTS:
+        for key, label in _prompts:
             current = cm.get(key)
             while True:
                 default_display = f" [{current}]" if current else ""
@@ -161,12 +161,12 @@ def init(ctx):
                 break
 
         # Optional keys
-        _OPTIONAL_PROMPTS = [
+        _optional_prompts = [
             ("smtp.user", "SMTP username (press Enter to skip)"),
             ("smtp.password", "SMTP password (press Enter to skip)"),
         ]
 
-        for key, label in _OPTIONAL_PROMPTS:
+        for key, label in _optional_prompts:
             current = cm.get(key)
             hide = key == "smtp.password"
             default_hint = f" [{'***' if hide and current else current or ''}]" if current else ""
@@ -233,7 +233,7 @@ def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
         )
         click.echo(f"Added feed #{feed.id}: {feed.url}")
     except FeedError as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
     finally:
         db.close()
 
@@ -257,7 +257,7 @@ def remove(ctx, feed_ref):
         fm.remove_feed(ref)
         click.echo(f"Removed feed: {feed_ref}")
     except FeedError as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
     finally:
         db.close()
 
@@ -303,7 +303,7 @@ def pause(ctx, feed_ref):
         message = fm.pause_feed(ref)
         click.echo(message)
     except FeedError as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
     finally:
         db.close()
 
@@ -326,7 +326,7 @@ def unpause(ctx, feed_ref):
         message = fm.unpause_feed(ref)
         click.echo(message)
     except FeedError as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(str(e)) from None
     finally:
         db.close()
 
@@ -370,8 +370,8 @@ def run(ctx, dry_run):
         user_agent = cm.get("user-agent") or "feed2email"
 
         # Instantiate dependencies
-        from feed2email.feed_fetcher import FeedFetcher
         from feed2email.email_sender import EmailSender
+        from feed2email.feed_fetcher import FeedFetcher
         from feed2email.template_renderer import TemplateRenderer
 
         fetcher = FeedFetcher(user_agent=user_agent)
@@ -379,6 +379,10 @@ def run(ctx, dry_run):
         mailer = None
         if not dry_run:
             smtp_config = cm.get_smtp()
+            if smtp_config is None:
+                raise click.ClickException(
+                    "SMTP is not configured. Run 'feed2email config' to set it up."
+                )
             mailer = EmailSender(smtp_config)
 
         renderer = TemplateRenderer()

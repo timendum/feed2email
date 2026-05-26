@@ -3,9 +3,10 @@
 import sqlite3
 from pathlib import Path
 
-from feed2email.models import Feed
 import pytest
+
 from feed2email.db import Database, _default_db_path
+from feed2email.models import Feed
 
 
 def add_feed(db: Database) -> Feed:

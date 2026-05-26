@@ -56,7 +56,7 @@ class Database:
         except sqlite3.OperationalError:
             try:
                 conn.close()
-            except Exception:
+            except RuntimeError:
                 pass
             return False
 
@@ -134,7 +134,7 @@ class Database:
         if urls is None:
             urls = [None] * len(values)
 
-        rows = [(feed_id, val, url) for val, url in zip(values, urls)]
+        rows = [(feed_id, val, url) for val, url in zip(values, urls, strict=True)]
         self.connection.executemany(
             "INSERT OR IGNORE INTO seen_items (feed_id, dedup_value, url) VALUES (?, ?, ?)",
             rows,

@@ -1,12 +1,11 @@
 """Hypothesis strategies for feed2email property-based tests."""
 
 import string
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from hypothesis import strategies as st
 
 from feed2email.models import FeedItem
-
 
 # --- URL Strategies ---
 
@@ -135,9 +134,9 @@ _OPTIONAL_TEXT = st.one_of(st.none(), st.text(min_size=1, max_size=100))
 _OPTIONAL_DATETIME = st.one_of(
     st.none(),
     st.datetimes(
-        min_value=datetime(2000, 1, 1),
-        max_value=datetime(2030, 12, 31),
-        timezones=st.just(timezone.utc),
+        min_value=datetime(2000, 1, 1, tzinfo=UTC),
+        max_value=datetime(2030, 12, 31, tzinfo=UTC),
+        timezones=st.just(UTC),
     ),
 )
 

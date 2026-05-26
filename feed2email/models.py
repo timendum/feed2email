@@ -108,7 +108,7 @@ def validate_url(url: str) -> bool:
     """Check URL has http/https scheme and is well-formed."""
     try:
         result = urlparse(url)
-    except Exception:
+    except RuntimeError:
         return False
     return result.scheme in ("http", "https") and bool(result.netloc)
 

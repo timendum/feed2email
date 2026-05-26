@@ -1,11 +1,11 @@
 """Runner module: orchestrates the full feed2email run cycle."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from feed2email.db import Database
-from feed2email.feed_fetcher import FeedFetcher
 from feed2email.email_sender import EmailSender
+from feed2email.feed_fetcher import FeedFetcher
 from feed2email.models import EmailMessage, Feed, FeedItem, RunResult
 from feed2email.template_renderer import TemplateRenderer
 
@@ -174,7 +174,7 @@ class Runner:
         # Mark as seen
         try:
             self._db.mark_seen(feed.id, dedup_value, item.link)
-        except Exception:
+        except RuntimeError:
             logger.warning(
                 "Failed to mark item as seen in feed %s (may be re-sent next run)",
                 feed.url,
@@ -188,7 +188,7 @@ class Runner:
 
     def _compute_date(self, item: FeedItem, feed: Feed) -> datetime:
         """Compute the Date header value."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         if not feed.item_date:
             return now
@@ -202,7 +202,7 @@ class Runner:
 
         # Ensure the date is timezone-aware
         if item.published.tzinfo is None:
-            return item.published.replace(tzinfo=timezone.utc)
+            return item.published.replace(tzinfo=UTC)
 
         return item.published
 

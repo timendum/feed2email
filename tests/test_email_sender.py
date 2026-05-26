@@ -1,7 +1,7 @@
 """Unit tests for EmailSender class."""
 
 import smtplib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -42,7 +42,7 @@ def email_message():
         subject="Test Subject",
         body="Hello, world!",
         content_type="text/plain",
-        date=datetime(2024, 1, 15, 12, 0, 0, tzinfo=timezone.utc),
+        date=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
     )
 
 
@@ -171,6 +171,7 @@ class TestEmailSenderSend:
         result = sender.send(email_message)
 
         assert result.success is False
+        assert result.error is not None
         assert "Connection refused" in result.error
 
     @patch("feed2email.email_sender.smtplib.SMTP")
