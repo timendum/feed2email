@@ -6,9 +6,9 @@ from pathlib import Path
 
 import click
 
-from feed2email.database import Database
-from feed2email.core.config_manager import ConfigManager
-from feed2email.core.feed_manager import FeedError, FeedManager
+from feed2email.db import Database
+from feed2email.config_manager import ConfigManager
+from feed2email.feed_manager import FeedError, FeedManager
 from feed2email.models import VALID_CONFIG_KEYS
 
 # Commands that do NOT require setup to be complete.
@@ -332,7 +332,9 @@ def unpause(ctx, feed_ref):
 
 
 @cli.command()
-@click.option("--dry-run", is_flag=True, default=False, help="Show what would be sent without sending.")
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Show what would be sent without sending."
+)
 @click.pass_context
 def run(ctx, dry_run):
     """Fetch all feeds and deliver new items via email.
@@ -381,7 +383,7 @@ def run(ctx, dry_run):
 
         renderer = TemplateRenderer()
 
-        from feed2email.core.runner import Runner
+        from feed2email.runner import Runner
 
         runner = Runner(db=db, fetcher=fetcher, mailer=mailer, renderer=renderer)
         result = runner.run(dry_run=dry_run)

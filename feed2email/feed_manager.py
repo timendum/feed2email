@@ -1,9 +1,8 @@
 import logging
 
-from feed2email.database import Database
+from feed2email.db import Database
 from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
-from feed2email.models import Feed
-from feed2email.validation import validate_email, validate_url
+from feed2email.models import Feed, validate_email, validate_url
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +83,7 @@ class FeedManager:
             raise FeedError(f"Feed not found: {feed_ref}")
 
     def list_feeds(self) -> list[Feed]:
-        """Returns list of Feed.
-        """
+        """Returns list of Feed."""
         return self._db.get_feeds(include_paused=True)
 
     def pause_feed(self, feed_ref: str | int) -> str:

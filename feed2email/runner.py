@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime, timezone
 
-from feed2email.database import Database
+from feed2email.db import Database
 from feed2email.feed_fetcher import FeedFetcher
 from feed2email.email_sender import EmailSender
 from feed2email.models import EmailMessage, Feed, FeedItem, RunResult

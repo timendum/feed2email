@@ -1,6 +1,5 @@
-from feed2email.database import Database
-from feed2email.models import REQUIRED_KEYS, SmtpConfig
-from feed2email.validation import validate_email, validate_port
+from feed2email.db import Database
+from feed2email.models import REQUIRED_KEYS, SmtpConfig, validate_email, validate_port
 
 _REQUIRED_SMTP_KEYS = ["smtp.host", "smtp.port", "smtp.from", "smtp.encryption"]
 

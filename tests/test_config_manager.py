@@ -1,7 +1,7 @@
 import pytest
 
-from feed2email.core.config_manager import ConfigManager
-from feed2email.database import Database
+from feed2email.config_manager import ConfigManager
+from feed2email.db import Database
 from feed2email.models import SmtpConfig
 
 
@@ -86,7 +86,6 @@ class TestConfig:
 
 
 class TestSmtp:
-
     def test_smtp_port_valid(self, config_mgr: ConfigManager) -> None:
         assert config_mgr.validate_value("smtp.port", "587") == (True, None)
         assert config_mgr.validate_value("smtp.port", "1") == (True, None)
@@ -155,7 +154,10 @@ class TestSmtp:
     def test_all_missing_when_empty(self, config_mgr: ConfigManager) -> None:
         missing = config_mgr.get_missing_smtp_keys()
         assert set(missing) == {
-            "smtp.host", "smtp.port", "smtp.from", "smtp.encryption",
+            "smtp.host",
+            "smtp.port",
+            "smtp.from",
+            "smtp.encryption",
         }
 
     def test_some_missing(self, config_mgr: ConfigManager) -> None:

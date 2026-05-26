@@ -34,7 +34,7 @@ class Database:
 
     def initialize(self) -> None:
         """Create the database schema if it doesn't exist."""
-        schema_sql = files("feed2email").joinpath("schema.sql").read_text()
+        schema_sql = files("feed2email.db").joinpath("schema.sql").read_text()
         self.connection.executescript(schema_sql)
 
     def acquire_lock(self) -> bool:

@@ -1,6 +1,6 @@
 """Unit tests for the validation module."""
 
-from feed2email.validation import validate_email, validate_port, validate_url
+from feed2email.models import validate_email, validate_port, validate_url
 
 
 class TestValidateUrl:

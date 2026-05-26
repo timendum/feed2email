@@ -3,8 +3,8 @@ from typing import Generator
 from pathlib import Path
 import pytest
 
-from feed2email.core.feed_manager import FeedManager
-from feed2email.database import Database
+from feed2email.feed_manager import FeedManager
+from feed2email.db import Database
 
 
 @pytest.fixture

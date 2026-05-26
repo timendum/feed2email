@@ -4,13 +4,12 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from feed2email.core.feed_manager import FeedManager, FeedError
-from feed2email.database import Database
+from feed2email.feed_manager import FeedManager, FeedError
+from feed2email.db import Database
 from feed2email.models import FeedItem, FetchResult
 
 
 class TestAddFeed:
-
     def test_add_feed_with_valid_url_and_recipient(self, db: Database):
         manager = FeedManager(db)
         feed = manager.add_feed(
@@ -77,8 +76,12 @@ class TestAddFeed:
     def test_add_feed_mark_read_marks_items_as_seen(self, db: Database):
         manager = FeedManager(db)
         items = [
-            FeedItem(id="item1", title="Title 1", link="http://a.com/1", content=None, published=None),
-            FeedItem(id="item2", title="Title 2", link="http://a.com/2", content=None, published=None),
+            FeedItem(
+                id="item1", title="Title 1", link="http://a.com/1", content=None, published=None
+            ),
+            FeedItem(
+                id="item2", title="Title 2", link="http://a.com/2", content=None, published=None
+            ),
         ]
         fetch_result = FetchResult(success=True, items=items, feed_title="Test Feed")
 
@@ -94,9 +97,7 @@ class TestAddFeed:
 
     def test_add_feed_mark_read_fetch_failure_still_adds_feed(self, db: Database):
         manager = FeedManager(db)
-        fetch_result = FetchResult(
-            success=False, items=[], feed_title="", error="Timeout"
-        )
+        fetch_result = FetchResult(success=False, items=[], feed_title="", error="Timeout")
 
         with patch.object(manager._fetcher, "fetch", return_value=fetch_result):
             feed = manager.add_feed(
@@ -111,7 +112,9 @@ class TestAddFeed:
     def test_add_feed_mark_read_skips_items_missing_dedup_key(self, db: Database):
         manager = FeedManager(db)
         items = [
-            FeedItem(id="item1", title="Title 1", link="http://a.com/1", content=None, published=None),
+            FeedItem(
+                id="item1", title="Title 1", link="http://a.com/1", content=None, published=None
+            ),
             FeedItem(id=None, title="Title 2", link="http://a.com/2", content=None, published=None),
             FeedItem(id="", title="Title 3", link="http://a.com/3", content=None, published=None),
         ]
@@ -131,7 +134,9 @@ class TestAddFeed:
     def test_add_feed_mark_read_with_link_dedup_key(self, db: Database):
         manager = FeedManager(db)
         items = [
-            FeedItem(id="item1", title="Title 1", link="http://a.com/1", content=None, published=None),
+            FeedItem(
+                id="item1", title="Title 1", link="http://a.com/1", content=None, published=None
+            ),
             FeedItem(id="item2", title="Title 2", link=None, content=None, published=None),
         ]
         fetch_result = FetchResult(success=True, items=items, feed_title="Test Feed")
