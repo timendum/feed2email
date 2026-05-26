@@ -47,9 +47,7 @@ class EmailSender:
             try:
                 if self.config.username and self.config.password:
                     connection.login(self.config.username, self.config.password)
-                connection.sendmail(
-                    self.config.from_address, message.recipient, msg.as_string()
-                )
+                connection.sendmail(self.config.from_address, message.recipient, msg.as_string())
             finally:
                 connection.quit()
 

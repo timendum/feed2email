@@ -18,16 +18,22 @@ class TestMakeSubject:
 
     def test_uses_title_when_present(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="My Article", link="http://example.com",
-            content=None, published=None,
+            id="1",
+            title="My Article",
+            link="http://example.com",
+            content=None,
+            published=None,
         )
         assert renderer.make_subject(item) == "My Article"
 
     def test_truncates_title_to_255_chars(self, renderer: TemplateRenderer) -> None:
         long_title = "A" * 300
         item = FeedItem(
-            id="1", title=long_title, link="http://example.com",
-            content=None, published=None,
+            id="1",
+            title=long_title,
+            link="http://example.com",
+            content=None,
+            published=None,
         )
         subject = renderer.make_subject(item)
         assert len(subject) == 255
@@ -35,29 +41,43 @@ class TestMakeSubject:
 
     def test_falls_back_to_link_when_no_title(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title=None, link="http://example.com/article",
-            content=None, published=None,
+            id="1",
+            title=None,
+            link="http://example.com/article",
+            content=None,
+            published=None,
         )
         assert renderer.make_subject(item) == "http://example.com/article"
 
     def test_falls_back_to_no_title_when_no_title_or_link(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title=None, link=None,
-            content=None, published=None,
+            id="1",
+            title=None,
+            link=None,
+            content=None,
+            published=None,
         )
         assert renderer.make_subject(item) == "No Title"
 
     def test_empty_title_falls_back_to_link(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="", link="http://example.com",
-            content=None, published=None,
+            id="1",
+            title="",
+            link="http://example.com",
+            content=None,
+            published=None,
         )
         assert renderer.make_subject(item) == "http://example.com"
 
-    def test_empty_title_and_empty_link_falls_back_to_no_title(self, renderer: TemplateRenderer) -> None:
+    def test_empty_title_and_empty_link_falls_back_to_no_title(
+        self, renderer: TemplateRenderer
+    ) -> None:
         item = FeedItem(
-            id="1", title="", link="",
-            content=None, published=None,
+            id="1",
+            title="",
+            link="",
+            content=None,
+            published=None,
         )
         assert renderer.make_subject(item) == "No Title"
 
@@ -99,7 +119,9 @@ class TestRender:
 
     def test_renders_plain_text_with_all_fields(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Test Title", link="http://example.com/article",
+            id="1",
+            title="Test Title",
+            link="http://example.com/article",
             content="Article body text",
             published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc),
         )
@@ -113,7 +135,9 @@ class TestRender:
 
     def test_renders_html_with_all_fields(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Test Title", link="http://example.com/article",
+            id="1",
+            title="Test Title",
+            link="http://example.com/article",
             content="Article body text",
             published=datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc),
         )
@@ -128,7 +152,9 @@ class TestRender:
 
     def test_body_uses_content(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Title", link=None,
+            id="1",
+            title="Title",
+            link=None,
             content="Content body",
             published=None,
         )
@@ -137,7 +163,9 @@ class TestRender:
 
     def test_body_uses_empty_string_when_no_content(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Title", link=None,
+            id="1",
+            title="Title",
+            link=None,
             content=None,
             published=None,
         )
@@ -147,7 +175,9 @@ class TestRender:
 
     def test_plain_text_strips_html_from_body(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Title", link=None,
+            id="1",
+            title="Title",
+            link=None,
             content="<p>Hello <b>World</b></p>",
             published=None,
         )
@@ -158,7 +188,9 @@ class TestRender:
 
     def test_html_format_preserves_html_in_body(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Title", link=None,
+            id="1",
+            title="Title",
+            link=None,
             content="<p>Hello <b>World</b></p>",
             published=None,
         )
@@ -167,7 +199,9 @@ class TestRender:
 
     def test_date_is_empty_string_when_published_is_none(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title="Title", link=None,
+            id="1",
+            title="Title",
+            link=None,
             content="Body",
             published=None,
         )
@@ -179,7 +213,9 @@ class TestRender:
 
     def test_missing_title_renders_empty(self, renderer: TemplateRenderer) -> None:
         item = FeedItem(
-            id="1", title=None, link="http://example.com",
+            id="1",
+            title=None,
+            link="http://example.com",
             content="Body",
             published=None,
         )

@@ -283,7 +283,9 @@ class TestEmailSenderSend:
         assert "List-ID: https://example.com/feed.xml" in raw_message
 
     @patch("feed2email.email_sender.smtplib.SMTP")
-    def test_list_id_header_omitted_when_no_feed_id(self, mock_smtp_class, smtp_config, email_message):
+    def test_list_id_header_omitted_when_no_feed_id(
+        self, mock_smtp_class, smtp_config, email_message
+    ):
         """List-ID header is not included when feed_id is None."""
         email_message.feed_id = None
         mock_conn = MagicMock()

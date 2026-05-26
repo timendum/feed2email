@@ -13,9 +13,7 @@ from feed2email.models import FeedItem
 _VALID_SCHEMES = st.sampled_from(["http://", "https://"])
 
 _DOMAIN_CHARS = string.ascii_lowercase + string.digits
-_DOMAIN_LABEL = st.text(
-    alphabet=_DOMAIN_CHARS, min_size=1, max_size=20
-)
+_DOMAIN_LABEL = st.text(alphabet=_DOMAIN_CHARS, min_size=1, max_size=20)
 _TLD = st.sampled_from(["com", "org", "net", "io", "dev", "co.uk", "edu"])
 
 _PATH_SEGMENT = st.text(
@@ -41,10 +39,20 @@ def valid_urls(draw: st.DrawFn) -> str:
     return url
 
 
-_INVALID_SCHEMES = st.sampled_from([
-    "ftp://", "file://", "mailto:", "javascript:", "data:", "",
-    "htp://", "htps://", "ssh://", "telnet://",
-])
+_INVALID_SCHEMES = st.sampled_from(
+    [
+        "ftp://",
+        "file://",
+        "mailto:",
+        "javascript:",
+        "data:",
+        "",
+        "htp://",
+        "htps://",
+        "ssh://",
+        "telnet://",
+    ]
+)
 
 
 @st.composite
@@ -95,10 +103,13 @@ def invalid_emails(draw: st.DrawFn) -> str:
     choice = draw(st.integers(min_value=0, max_value=4))
     if choice == 0:
         # Missing @
-        return draw(st.text(
-            alphabet=string.ascii_lowercase + string.digits,
-            min_size=3, max_size=20,
-        ))
+        return draw(
+            st.text(
+                alphabet=string.ascii_lowercase + string.digits,
+                min_size=3,
+                max_size=20,
+            )
+        )
     elif choice == 1:
         # Missing domain
         local = draw(_EMAIL_LOCAL)
@@ -169,10 +180,25 @@ def feed_items_with_title(draw: st.DrawFn) -> FeedItem:
 
 # --- HTML Strategies ---
 
-_HTML_TAGS = st.sampled_from([
-    "p", "div", "span", "a", "b", "i", "em", "strong",
-    "h1", "h2", "h3", "ul", "li", "br", "img",
-])
+_HTML_TAGS = st.sampled_from(
+    [
+        "p",
+        "div",
+        "span",
+        "a",
+        "b",
+        "i",
+        "em",
+        "strong",
+        "h1",
+        "h2",
+        "h3",
+        "ul",
+        "li",
+        "br",
+        "img",
+    ]
+)
 
 _TEXT_CONTENT = st.text(
     alphabet=string.ascii_letters + string.digits + " .,!?",
@@ -198,10 +224,16 @@ def html_strings(draw: st.DrawFn) -> str:
                 parts.append(f"<{tag}>{text}</{tag}>")
         elif element_type == 1:
             # Element with attributes
-            attr = draw(st.sampled_from([
-                'class="test"', 'id="item"', 'href="http://example.com"',
-                'style="color:red"',
-            ]))
+            attr = draw(
+                st.sampled_from(
+                    [
+                        'class="test"',
+                        'id="item"',
+                        'href="http://example.com"',
+                        'style="color:red"',
+                    ]
+                )
+            )
             parts.append(f"<{tag} {attr}>{text}</{tag}>")
         else:
             # Nested elements

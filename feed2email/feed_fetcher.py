@@ -72,7 +72,6 @@ class FeedFetcher:
         raise last_error or ValueError("Unable to parse feed")
 
     def _convert_item(self, item: feedendum.FeedItem) -> FeedItem:
-
         return FeedItem(
             id=item.id,
             title=item.title,
@@ -80,4 +79,3 @@ class FeedFetcher:
             content=item.content,
             published=item.published,
         )
-

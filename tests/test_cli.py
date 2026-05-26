@@ -305,4 +305,3 @@ class TestRunCommand:
     def test_run_blocked_by_setup_guard(self, runner, db_path):
         result = runner.invoke(cli, ["--db", db_path, "run"])
         assert result.exit_code != 0
-
