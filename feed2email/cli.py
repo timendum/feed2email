@@ -1,5 +1,7 @@
 """feed2email CLI entry point."""
 
+import logging
+import sys
 from pathlib import Path
 
 import click
@@ -248,7 +250,7 @@ def remove(ctx, feed_ref):
     db = _get_database(ctx)
     try:
         fm = FeedManager(db)
-        # Try to interpret as an integer Feed_ID
+        # Try integer Feed_ID
         ref: str | int = feed_ref
         if feed_ref.isdigit():
             ref = int(feed_ref)
@@ -325,5 +327,66 @@ def unpause(ctx, feed_ref):
         click.echo(message)
     except FeedError as e:
         raise click.ClickException(str(e))
+    finally:
+        db.close()
+
+
+@cli.command()
+@click.option("--dry-run", is_flag=True, default=False, help="Show what would be sent without sending.")
+@click.pass_context
+def run(ctx, dry_run):
+    """Fetch all feeds and deliver new items via email.
+
+    With --dry-run, display what would be sent without actually sending
+    emails or recording items as seen.
+    """
+    _setup_guard(ctx)
+
+    verbose = ctx.obj.get("verbose", False)
+    log_level = logging.INFO if verbose else logging.WARNING
+    logging.basicConfig(level=log_level, format="%(message)s")
+
+    db = _get_database(ctx)
+    try:
+        cm = ConfigManager(db)
+        fm = FeedManager(db)
+
+        feeds = fm.list_feeds()
+        if not feeds:
+            click.echo("No feeds configured.")
+            sys.exit(0)
+
+        if not dry_run:
+            missing_keys = cm.get_missing_smtp_keys()
+            if missing_keys:
+                raise click.ClickException(
+                    f"SMTP configuration incomplete. Missing: {', '.join(missing_keys)}\n"
+                    "Run 'feed2email config' to set the required SMTP parameters."
+                )
+
+        # Get user-agent from config or use default
+        user_agent = cm.get("user-agent") or "feed2email"
+
+        # Instantiate dependencies
+        from feed2email.fetcher.feed_fetcher import FeedFetcher
+        from feed2email.mailer.email_sender import EmailSender
+        from feed2email.renderer.template_renderer import TemplateRenderer
+
+        fetcher = FeedFetcher(user_agent=user_agent)
+
+        mailer = None
+        if not dry_run:
+            smtp_config = cm.get_smtp()
+            mailer = EmailSender(smtp_config)
+
+        renderer = TemplateRenderer()
+
+        from feed2email.core.runner import Runner
+
+        runner = Runner(db=db, fetcher=fetcher, mailer=mailer, renderer=renderer)
+        result = runner.run(dry_run=dry_run)
+
+        exit_code = runner.compute_exit_code(result)
+        sys.exit(exit_code)
     finally:
         db.close()

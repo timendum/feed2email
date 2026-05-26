@@ -290,3 +290,19 @@ class TestUnpauseCommand:
         _setup_required_config(runner, db_path)
         result = runner.invoke(cli, ["--db", db_path, "unpause", "999"])
         assert result.exit_code != 0
+
+
+class TestRunCommand:
+    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+        _setup_required_config(runner, db_path)
+        runner.invoke(cli, ["--db", db_path, "add", url])
+
+    def test_run_no_feeds_exits_0(self, runner, db_path):
+        _setup_required_config(runner, db_path)
+        result = runner.invoke(cli, ["--db", db_path, "run"])
+        assert result.exit_code == 0
+
+    def test_run_blocked_by_setup_guard(self, runner, db_path):
+        result = runner.invoke(cli, ["--db", db_path, "run"])
+        assert result.exit_code != 0
+
