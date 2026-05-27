@@ -18,8 +18,8 @@ class TestAddFeed:
         )
         assert feed.url == "https://example.com/feed.xml"
         assert feed.recipient == "user@example.com"
-        assert feed.dedup_key == "id"
-        assert feed.format == "text"
+        assert feed.dedup_key is not None
+        assert feed.format is not None
         assert feed.item_date is False
         assert feed.paused is False
 

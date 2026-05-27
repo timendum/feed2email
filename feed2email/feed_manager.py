@@ -23,7 +23,7 @@ class FeedManager:
         self,
         url: str,
         recipient: str | None = None,
-        dedup_key: str = "id",
+        dedup_key: str = "link",
         format: str = "text",
         item_date: bool = False,
         mark_read: bool = False,

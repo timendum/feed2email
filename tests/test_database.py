@@ -60,8 +60,9 @@ class TestSchemaInitialization:
 
     def test_seen_items_delete_cascade(self, db: Database):
         db.connection.execute(
-            "INSERT INTO feeds (url, recipient) VALUES (?, ?)",
-            ("https://example.com/feed.xml", "user@example.com"),
+            "INSERT INTO feeds (url, recipient, dedup_key, format, item_date)"
+            " VALUES (?, ?, ?, ?, ?)",
+            ("https://example.com/feed.xml", "user@example.com", "id", "text", 0),
         )
         db.connection.commit()
 
