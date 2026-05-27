@@ -411,3 +411,7 @@ class TestEmailSenderSend:
         assert "X-Feed-URL: https://example.com/feed.xml" in raw_message
         assert "X-Feed-Item-URL: https://example.com/post/1" in raw_message
         assert "X-Feed-Item-ID: post-1" in raw_message
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

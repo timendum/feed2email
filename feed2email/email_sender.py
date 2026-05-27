@@ -52,7 +52,7 @@ class EmailSender:
                 connection.quit()
 
             return SendResult(success=True)
-        except RuntimeError as e:
+        except (RuntimeError, OSError) as e:
             return SendResult(success=False, error=str(e))
 
     def _connect(self) -> smtplib.SMTP | smtplib.SMTP_SSL:
