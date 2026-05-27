@@ -90,10 +90,11 @@ class TestAddFeed:
                 url="https://example.com/feed.xml",
                 recipient="user@example.com",
                 mark_read=True,
+                dedup_key="link",
             )
 
-        assert db.is_seen(feed.id, "item1")
-        assert db.is_seen(feed.id, "item2")
+        for item in items:
+            assert db.is_seen(feed.id, item.link)
 
     def test_add_feed_mark_read_fetch_failure_still_adds_feed(self, db: Database):
         manager = FeedManager(db)
@@ -125,6 +126,7 @@ class TestAddFeed:
                 url="https://example.com/feed.xml",
                 recipient="user@example.com",
                 mark_read=True,
+                dedup_key="id",
             )
 
         # Only item1 should be marked as seen
