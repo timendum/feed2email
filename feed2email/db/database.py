@@ -84,8 +84,6 @@ class Database:
             self.connection.close()
         except sqlite3.Error:
             pass
-        finally:
-            self.connection = None
 
     def is_seen(self, feed_id: int, dedup_value: str) -> bool:
         """Check if an item has already been seen for a given feed.

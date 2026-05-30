@@ -51,27 +51,18 @@ def runner(mock_db, mock_fetcher, mock_mailer, mock_renderer):
 
 def _make_feed(db: Database, url: str = "http://example.com/feed.xml", **kwargs) -> Feed:
     """Helper to add a feed to the database and return it."""
-    defaults = {
-        "recipient": None,
-        "dedup_key": "id",
-        "format": "text",
-        "item_date": False,
-    }
-    defaults.update(kwargs)
-    return db.add_feed(url=url, **defaults)
+    return db.add_feed(url=url, recipient=None, dedup_key="id", format="text", item_date=False)
 
 
 def _make_item(**kwargs) -> FeedItem:
     """Helper to create a FeedItem with defaults."""
-    defaults = {
-        "id": "item-1",
-        "title": "Test Item",
-        "link": "http://example.com/item-1",
-        "content": "<p>Content</p>",
-        "published": datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
-    }
-    defaults.update(kwargs)
-    return FeedItem(**defaults)
+    return FeedItem(
+        id="item-1",
+        title="Test Item",
+        link="http://example.com/item-1",
+        content="<p>Content</p>",
+        published=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+    )
 
 
 class TestRunnerNoFeeds:

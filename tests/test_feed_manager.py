@@ -94,7 +94,7 @@ class TestAddFeed:
             )
 
         for item in items:
-            assert db.is_seen(feed.id, item.link)
+            assert db.is_seen(feed.id, str(item.link))
 
     def test_add_feed_mark_read_fetch_failure_still_adds_feed(self, db: Database):
         manager = FeedManager(db)
