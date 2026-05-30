@@ -20,7 +20,7 @@ class TestFeedFetcherUserAgent:
         fetcher = FeedFetcher(user_agent="CustomAgent/2.0")
         mock_response = MagicMock()
         mock_response.status_code = 200
-        mock_response.text = "<rss></rss>"
+        mock_response.text = "<rss version='2.0'><channel></channel></rss>"
         mock_response.apparent_encoding = "utf-8"
         mock_response.raise_for_status = MagicMock()
 

@@ -82,38 +82,6 @@ class TestMakeSubject:
         assert renderer.make_subject(item) == "No Title"
 
 
-class TestStripHtml:
-    """Tests for strip_html() static method."""
-
-    def test_removes_simple_tags(self) -> None:
-        assert TemplateRenderer.strip_html("<p>Hello</p>") == "Hello"
-
-    def test_removes_nested_tags(self) -> None:
-        assert TemplateRenderer.strip_html("<div><p>Hello</p></div>") == "Hello"
-
-    def test_removes_tags_with_attributes(self) -> None:
-        html = '<a href="http://example.com" class="link">Click here</a>'
-        assert TemplateRenderer.strip_html(html) == "Click here"
-
-    def test_preserves_text_between_tags(self) -> None:
-        html = "<p>First</p> <p>Second</p>"
-        assert TemplateRenderer.strip_html(html) == "First Second"
-
-    def test_handles_self_closing_tags(self) -> None:
-        html = "Hello<br/>World"
-        assert TemplateRenderer.strip_html(html) == "HelloWorld"
-
-    def test_handles_empty_string(self) -> None:
-        assert TemplateRenderer.strip_html("") == ""
-
-    def test_handles_no_tags(self) -> None:
-        assert TemplateRenderer.strip_html("Just plain text") == "Just plain text"
-
-    def test_handles_void_elements(self) -> None:
-        html = "Line1<br>Line2"
-        assert TemplateRenderer.strip_html(html) == "Line1Line2"
-
-
 class TestRender:
     """Tests for render() method."""
 
@@ -221,3 +189,7 @@ class TestRender:
         )
         result = renderer.render(item, "Feed", "http://feed.url", "text")
         assert "http://example.com" in result
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

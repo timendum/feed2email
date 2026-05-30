@@ -8,6 +8,7 @@ dependencies = [
   "click>=8.3",
   "feedendum>=0.4",
   "jinja2>=3.1",
+  "nh3>=0.3",
   "platformdirs>=4.9",
   "requests>=2.31",
 ]
