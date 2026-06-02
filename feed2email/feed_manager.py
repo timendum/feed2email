@@ -2,7 +2,7 @@ import logging
 
 from feed2email.db import Database
 from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
-from feed2email.models import Feed, validate_email, validate_url
+from feed2email.models import Feed, FeedItem, validate_email, validate_url
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +177,7 @@ class FeedManager:
             self._db.mark_many_seen(feed.id, dedup_values, urls)
 
     @staticmethod
-    def _get_dedup_value(item, dedup_key: str) -> str | None:
+    def _get_dedup_value(item: FeedItem, dedup_key: str) -> str | None:
         """Extract the deduplication value from a feed item.
 
         Args:
@@ -192,5 +192,5 @@ class FeedManager:
         elif dedup_key == "link":
             return item.link if item.link else None
         elif dedup_key == "title":
-            return item.title if item.title else None
+            return item.title.lower().strip() if item.title else None
         return None

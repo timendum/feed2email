@@ -51,17 +51,23 @@ def runner(mock_db, mock_fetcher, mock_mailer, mock_renderer):
 
 def _make_feed(db: Database, url: str = "http://example.com/feed.xml", **kwargs) -> Feed:
     """Helper to add a feed to the database and return it."""
-    return db.add_feed(url=url, recipient=None, dedup_key="id", format="text", item_date=False)
+    return db.add_feed(
+        url=url,
+        recipient=kwargs.get("recipient", None),
+        dedup_key=kwargs.get("dedup_key", "link"),
+        format=kwargs.get("format", "text"),
+        item_date=kwargs.get("item_date", False),
+    )
 
 
 def _make_item(**kwargs) -> FeedItem:
     """Helper to create a FeedItem with defaults."""
     return FeedItem(
-        id="item-1",
-        title="Test Item",
-        link="http://example.com/item-1",
-        content="<p>Content</p>",
-        published=datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC),
+        id=kwargs.get("id", "item-1"),
+        title=kwargs.get("title", "Test Item"),
+        link=kwargs.get("link", "http://example.com/item-1"),
+        content=kwargs.get("content", "<p>Content</p>"),
+        published=kwargs.get("published", datetime(2024, 1, 15, 12, 0, 0, tzinfo=UTC)),
     )
 
 
@@ -133,7 +139,7 @@ class TestRunnerDeduplication:
     """Tests for deduplication logic."""
 
     def test_seen_items_are_skipped(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
-        feed = _make_feed(mock_db)
+        feed = _make_feed(mock_db, dedup_key="id")
         mock_db.mark_seen(feed.id, "item-1")
 
         items = [_make_item(id="item-1")]
@@ -148,7 +154,7 @@ class TestRunnerDeduplication:
     def test_unseen_items_are_sent(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
         _make_feed(mock_db)
 
-        items = [_make_item(id="item-1")]
+        items = [_make_item(link="item-1")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
@@ -173,7 +179,7 @@ class TestRunnerDeduplication:
         mock_mailer.send.assert_not_called()
 
     def test_sent_items_are_marked_seen(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
-        feed = _make_feed(mock_db)
+        feed = _make_feed(mock_db, dedup_key="id")
 
         items = [_make_item(id="new-item")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
@@ -182,7 +188,21 @@ class TestRunnerDeduplication:
         runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
         runner.run()
 
-        assert mock_db.is_seen(feed.id, "new-item")
+        assert mock_db.is_seen(feed.id, items[0].id)
+
+    def test_sent_items_are_marked_seen_link(
+        self, mock_db, mock_fetcher, mock_mailer, mock_renderer
+    ):
+        feed = _make_feed(mock_db, dedup_key="link")
+
+        items = [_make_item(link="http://example.com/new-item")]
+        mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
+        mock_mailer.send.return_value = SendResult(success=True)
+
+        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner.run()
+
+        assert mock_db.is_seen(feed.id, items[0].link)
 
     def test_dedup_by_link(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
         feed = _make_feed(mock_db, dedup_key="link")
@@ -482,7 +502,7 @@ class TestRunnerEmailMessage:
     """Tests for email message construction."""
 
     def test_email_includes_feed_metadata(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
-        _make_feed(mock_db, url="http://example.com/feed.xml")
+        feed = _make_feed(mock_db, url="http://example.com/feed.xml")
 
         item = _make_item(id="item-123", link="http://example.com/item-123")
         mock_fetcher.fetch.return_value = FetchResult(
@@ -494,9 +514,9 @@ class TestRunnerEmailMessage:
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
-        assert sent_message.feed_id == "http://example.com/feed.xml"
-        assert sent_message.item_url == "http://example.com/item-123"
-        assert sent_message.item_id == "item-123"
+        assert sent_message.feed_id == feed.url
+        assert sent_message.item_url == item.link
+        assert sent_message.item_id == item.id
 
     def test_email_includes_user_agent(self, mock_db, mock_fetcher, mock_mailer, mock_renderer):
         _make_feed(mock_db)
@@ -564,3 +584,7 @@ class TestRunnerPausedFeeds:
 
         mock_fetcher.fetch.assert_not_called()
         assert result.feeds_processed == 0
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])
