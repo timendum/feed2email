@@ -212,12 +212,20 @@ def init(ctx):
     default=False,
     help="Use item publication date as email Date header.",
 )
-@click.option("--mark-read", is_flag=True, default=False, help="Mark all existing items as read.")
+@click.option(
+    "--mark-read",
+    is_flag=True,
+    default=False,
+    help="Mark all existing items as read (default: all but the latest are marked).",
+)
 @click.pass_context
 def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
     """Add a feed URL to monitor.
 
-    URL is the RSS/Atom feed URL to add.
+    URL is the RSS/Atom feed URL to add. The feed is fetched immediately to
+    verify it is reachable and parseable. By default, all existing items except
+    the most recent one are marked as read so you receive only the latest item
+    on the next run. Use --mark-read to mark ALL items as read instead.
     """
     _setup_guard(ctx)
     db = _get_database(ctx)

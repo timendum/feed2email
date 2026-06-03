@@ -30,16 +30,23 @@ class FeedManager:
     ) -> Feed:
         """Add a new feed to the database.
 
+        Always fetches the feed to validate it is reachable and parseable.
+        Marks all items except the most recent one as read.
+
         Args:
             url: The feed URL.
             recipient: Email address. None = use default-recipient at run time.
-            dedup_key: Deduplication key field ('id', 'link', or 'title').
+            dedup_key: Deduplication key field.
             format: Email format ('text' or 'html').
             item_date: Use item publication date for email Date header?
-            mark_read: Mark all current items as seen?
+            mark_read: Mark *all* current items as seen (including the latest)?
 
         Returns:
             Feed object.
+
+        Raises:
+            FeedError: If the URL is invalid, the feed already exists, or the
+                feed cannot be fetched/parsed.
         """
         if not validate_url(url):
             raise FeedError(f"Invalid URL: {url}")
@@ -47,15 +54,14 @@ class FeedManager:
         if recipient is not None and not validate_email(recipient):
             raise FeedError(f"Invalid email address: {recipient}")
 
-        if recipient is None and self._db.get_config("default-recipient") is None:
-            raise FeedError(
-                "No recipient specified and no default-recipient configured. "
-                "Set a default with: feed2email config default-recipient <email>"
-            )
-
         existing = self._db.get_feed(url)
         if existing is not None:
             raise FeedError(f"Feed already exists: {url}")
+
+        # Always fetch the feed to validate it is reachable and parseable.
+        result = self._fetcher.fetch(url)
+        if not result.success:
+            raise FeedError(f"Failed to fetch feed: {result.error}")
 
         feed = self._db.add_feed(
             url=url,
@@ -65,8 +71,10 @@ class FeedManager:
             item_date=item_date,
         )
 
-        if mark_read:
-            self._mark_existing_items_read(feed)
+        # Mark items as seen based on the mark_read flag:
+        # - mark_read=True  → mark ALL items as read
+        # - mark_read=False → mark all EXCEPT the latest item as read
+        self._mark_items_on_add(feed, result.items, mark_read=mark_read)
 
         return feed
 
@@ -142,26 +150,29 @@ class FeedManager:
             )
         return default_recipient
 
-    def _mark_existing_items_read(self, feed: Feed) -> None:
-        """Fetch the feed and mark all current items as seen.
+    def _mark_items_on_add(self, feed: Feed, items: list[FeedItem], mark_read: bool) -> None:
+        """Mark items as seen when adding a feed.
 
         Args:
-            feed: The feed to mark items as read for.
+            feed: The newly added feed.
+            items: The items fetched from the feed.
+            mark_read: If True, mark ALL items as seen. If False, mark all
+                items except the most recent one (first in the list) as seen.
         """
-        result = self._fetcher.fetch(feed.url)
+        if not items:
+            return
 
-        if not result.success:
-            logger.warning(
-                "Could not mark existing items as read for %s: %s",
-                feed.url,
-                result.error,
-            )
+        if all(item.published for item in items):
+            items = sorted(items, key=lambda item: item.published, reverse=True)
+        items_to_mark = items if mark_read else items[1:]
+
+        if not items_to_mark:
             return
 
         dedup_values: list[str] = []
         urls: list[str | None] = []
 
-        for item in result.items:
+        for item in items_to_mark:
             value = self._get_dedup_value(item, feed.dedup_key)
             if value is None:
                 logger.warning(

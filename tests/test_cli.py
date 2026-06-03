@@ -110,12 +110,12 @@ class TestAddCommand:
     def _setup_default_recipient(self, runner, db_path):
         _setup_required_config(runner, db_path)
 
-    def test_add_feed_with_default_recipient(self, runner, db_path):
+    def test_add_feed_with_default_recipient(self, runner, db_path, patch_fetch):
         self._setup_default_recipient(runner, db_path)
         result = runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed.xml"])
         assert result.exit_code == 0
 
-    def test_add_feed_with_explicit_recipient(self, runner, db_path):
+    def test_add_feed_with_explicit_recipient(self, runner, db_path, patch_fetch):
         self._setup_default_recipient(runner, db_path)
         result = runner.invoke(
             cli,
@@ -140,7 +140,7 @@ class TestAddCommand:
         result = runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed.xml"])
         assert result.exit_code != 0
 
-    def test_add_duplicate_feed_errors(self, runner, db_path):
+    def test_add_duplicate_feed_errors(self, runner, db_path, patch_fetch):
         self._setup_default_recipient(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed.xml"])
         result = runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed.xml"])
@@ -159,7 +159,7 @@ class TestAddCommand:
         )
         assert result.exit_code != 0
 
-    def test_add_with_options(self, runner, db_path):
+    def test_add_with_options(self, runner, db_path, patch_fetch):
         self._setup_default_recipient(runner, db_path)
         result = runner.invoke(
             cli,
@@ -185,17 +185,17 @@ class TestAddCommand:
 
 
 class TestRemoveCommand:
-    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 
-    def test_remove_by_url(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_remove_by_url(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "remove", "https://example.com/feed.xml"])
         assert result.exit_code == 0
 
-    def test_remove_by_id(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_remove_by_id(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "remove", "1"])
         assert result.exit_code == 0
 
@@ -206,7 +206,7 @@ class TestRemoveCommand:
 
 
 class TestListCommand:
-    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 
@@ -216,21 +216,21 @@ class TestListCommand:
         assert result.exit_code == 0
         assert "No feeds configured." in result.output
 
-    def test_list_shows_feed(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_list_shows_feed(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "list"])
         assert result.exit_code == 0
         assert "https://example.com/feed.xml" in result.output
         assert "dedup_key=id" in result.output
         assert "active" in result.output
 
-    def test_list_shows_paused_status(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_list_shows_paused_status(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         runner.invoke(cli, ["--db", db_path, "pause", "1"])
         result = runner.invoke(cli, ["--db", db_path, "list"])
         assert "paused" in result.output
 
-    def test_list_shows_recipient(self, runner, db_path):
+    def test_list_shows_recipient(self, runner, db_path, patch_fetch):
         _setup_required_config(runner, db_path)
         runner.invoke(
             cli,
@@ -249,17 +249,17 @@ class TestListCommand:
 
 
 class TestPauseCommand:
-    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 
-    def test_pause_feed(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_pause_feed(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "pause", "1"])
         assert result.exit_code == 0
 
-    def test_pause_already_paused(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_pause_already_paused(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         runner.invoke(cli, ["--db", db_path, "pause", "1"])
         result = runner.invoke(cli, ["--db", db_path, "pause", "1"])
         assert result.exit_code == 0
@@ -271,18 +271,18 @@ class TestPauseCommand:
 
 
 class TestUnpauseCommand:
-    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 
-    def test_unpause_paused_feed(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_unpause_paused_feed(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         runner.invoke(cli, ["--db", db_path, "pause", "1"])
         result = runner.invoke(cli, ["--db", db_path, "unpause", "1"])
         assert result.exit_code == 0
 
-    def test_unpause_already_active(self, runner, db_path):
-        self._add_feed(runner, db_path)
+    def test_unpause_already_active(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "unpause", "1"])
         assert result.exit_code == 0
 
@@ -293,7 +293,7 @@ class TestUnpauseCommand:
 
 
 class TestRunCommand:
-    def _add_feed(self, runner, db_path, url="https://example.com/feed.xml"):
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 

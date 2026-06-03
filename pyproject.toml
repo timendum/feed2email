@@ -81,13 +81,7 @@ select = [
 ]
 ignore = [
   "FURB110",
-  # "ANN401",
   "COM812",
-  # "ISC001",
-  #   "TD003",
-  #   "FIX002",
-  #   "S101",
-  #   "PLR0913",
 ]
 
 [tool.ruff.lint.per-file-ignores]
