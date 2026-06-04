@@ -32,7 +32,7 @@ def patched_manager(feed_manager: FeedManager) -> FeedManager:
 
         patched_manager._fetcher.fetch.return_value = FetchResult(...)
     """
-    feed_manager._fetcher.fetch = MagicMock(  # ty:ignore[invalid-assignment]
+    feed_manager._fetcher.fetch = MagicMock(
         return_value=FetchResult(success=True, items=[], feed_title="Test Feed")
     )
     return feed_manager
