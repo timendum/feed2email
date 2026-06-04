@@ -111,3 +111,10 @@ max-args = 7
 
 [tool.ruff.format]
 docstring-code-format = true
+
+[[tool.ty.overrides]]
+include = ["tests/**"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
+invalid-assignment = "ignore"
