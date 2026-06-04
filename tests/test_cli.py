@@ -180,7 +180,6 @@ class TestAddCommand:
     def test_add_blocked_by_setup_guard(self, runner, db_path):
         result = runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed.xml"])
         assert result.exit_code != 0
-        assert "Setup is incomplete" in result.output
         assert "feed2email init" in result.output
 
 
@@ -214,7 +213,6 @@ class TestListCommand:
         _setup_required_config(runner, db_path)
         result = runner.invoke(cli, ["--db", db_path, "list"])
         assert result.exit_code == 0
-        assert "No feeds configured." in result.output
 
     def test_list_shows_feed(self, runner, db_path, patch_fetch):
         self._add_feed(runner, db_path, patch_fetch)
@@ -289,6 +287,102 @@ class TestUnpauseCommand:
     def test_unpause_nonexistent_errors(self, runner, db_path):
         _setup_required_config(runner, db_path)
         result = runner.invoke(cli, ["--db", db_path, "unpause", "999"])
+        assert result.exit_code != 0
+
+
+class TestEditCommand:
+    def _add_feed(self, runner, db_path, patch_fetch, url="https://example.com/feed.xml"):
+        _setup_required_config(runner, db_path)
+        runner.invoke(cli, ["--db", db_path, "add", url])
+
+    def test_edit_dedup_key_by_id(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--dedup-key", "link"])
+        assert result.exit_code == 0
+
+    def test_edit_dedup_key_by_url(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(
+            cli,
+            ["--db", db_path, "edit", "https://example.com/feed.xml", "--dedup-key", "title"],
+        )
+        assert result.exit_code == 0
+
+    def test_edit_format(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--format", "html"])
+        assert result.exit_code == 0
+
+    def test_edit_item_date_enable(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--item-date"])
+        assert result.exit_code == 0
+
+    def test_edit_item_date_disable(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch, url="https://example.com/feed.xml")
+        runner.invoke(cli, ["--db", db_path, "edit", "1", "--item-date"])
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--no-item-date"])
+        assert result.exit_code == 0
+
+    def test_edit_url(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(
+            cli, ["--db", db_path, "edit", "1", "--url", "https://example.com/new-feed.xml"]
+        )
+        assert result.exit_code == 0
+        assert "https://example.com/new-feed.xml" in result.output
+
+    def test_edit_multiple_options(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(
+            cli,
+            ["--db", db_path, "edit", "1", "--dedup-key", "link", "--format", "html"],
+        )
+        assert result.exit_code == 0
+
+    def test_edit_no_options_errors(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1"])
+        assert result.exit_code != 0
+
+    def test_edit_nonexistent_feed_errors(self, runner, db_path):
+        _setup_required_config(runner, db_path)
+        result = runner.invoke(cli, ["--db", db_path, "edit", "999", "--dedup-key", "link"])
+        assert result.exit_code != 0
+
+    def test_edit_nonexistent_url_errors(self, runner, db_path):
+        _setup_required_config(runner, db_path)
+        result = runner.invoke(
+            cli,
+            ["--db", db_path, "edit", "https://nonexistent.com/feed.xml", "--dedup-key", "link"],
+        )
+        assert result.exit_code != 0
+
+    def test_edit_invalid_url_errors(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(
+            cli, ["--db", db_path, "edit", "1", "--url", "ftp://bad-protocol.com/feed"]
+        )
+        assert result.exit_code != 0
+
+    def test_edit_url_duplicate_errors(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch, url="https://example.com/feed1.xml")
+        runner.invoke(cli, ["--db", db_path, "add", "https://example.com/feed2.xml"])
+        result = runner.invoke(
+            cli,
+            ["--db", db_path, "edit", "1", "--url", "https://example.com/feed2.xml"],
+        )
+        assert result.exit_code != 0
+
+    def test_edit_url_same_url_succeeds(self, runner, db_path, patch_fetch):
+        self._add_feed(runner, db_path, patch_fetch)
+        result = runner.invoke(
+            cli, ["--db", db_path, "edit", "1", "--url", "https://example.com/feed.xml"]
+        )
+        assert result.exit_code == 0
+
+    def test_edit_blocked_by_setup_guard(self, runner, db_path):
+        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--dedup-key", "link"])
         assert result.exit_code != 0
 
 

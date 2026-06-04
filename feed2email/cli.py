@@ -248,6 +248,56 @@ def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
 
 @cli.command()
 @click.argument("feed_ref")
+@click.option("--url", default=None, help="New feed URL.")
+@click.option(
+    "--dedup-key",
+    type=click.Choice(["id", "link", "title"]),
+    default=None,
+    help="Field used for deduplication.",
+)
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "html"]),
+    default=None,
+    help="Email format.",
+)
+@click.option(
+    "--item-date/--no-item-date",
+    default=None,
+    help="Use item publication date as email Date header.",
+)
+@click.pass_context
+def edit(ctx, feed_ref, url, dedup_key, fmt, item_date):
+    """Edit a feed's configuration.
+
+    FEED_REF is the feed URL or numeric Feed_ID.
+
+    At least one option must be provided. Only the specified fields are changed.
+    """
+    _setup_guard(ctx)
+    db = _get_database(ctx)
+    try:
+        fm = FeedManager(db)
+        ref: str | int = feed_ref
+        if feed_ref.isdigit():
+            ref = int(feed_ref)
+        feed = fm.edit_feed(
+            feed_ref=ref,
+            url=url,
+            dedup_key=dedup_key,
+            format=fmt,
+            item_date=item_date,
+        )
+        click.echo(f"Updated feed #{feed.id}: {feed.url}")
+    except FeedError as e:
+        raise click.ClickException(str(e)) from None
+    finally:
+        db.close()
+
+
+@cli.command()
+@click.argument("feed_ref")
 @click.pass_context
 def remove(ctx, feed_ref):
     """Remove a feed by URL or Feed_ID.

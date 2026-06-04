@@ -91,10 +91,3 @@ class TestValidatePort:
 
     def test_rejects_too_large(self):
         assert validate_port(65536) is False
-
-    def test_rejects_boolean_true(self):
-        # bool is a subclass of int in Python, but we should reject it
-        # Actually, True == 1 and isinstance(True, int) is True in Python
-        # The design says "check integer in [1, 65535]" - booleans pass isinstance check
-        # This is acceptable behavior per Python's type system
-        pass

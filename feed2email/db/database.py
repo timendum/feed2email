@@ -213,8 +213,8 @@ class Database:
         Args:
             url: The feed URL.
             recipient: The recipient email address, or None to use default-recipient.
-            dedup_key: Key to use ('id', 'link', or 'title').
-            format: Email format ('text' or 'html').
+            dedup_key: Key to use.
+            format: Email format.
             item_date: Whether to use item publication date for email Date header.
 
         Returns:
@@ -318,3 +318,55 @@ class Database:
             (int(paused), feed_id),
         )
         conn.commit()
+
+    def update_feed(
+        self,
+        feed_id: int,
+        url: str | None = None,
+        dedup_key: str | None = None,
+        format: str | None = None,
+        item_date: bool | None = None,
+    ) -> Feed:
+        """Update one or more fields on a feed.
+
+        Args:
+            feed_id: The numeric ID of the feed to update.
+            url: New feed URL.
+            dedup_key: New deduplication key).
+            format: New email format.
+            item_date: Whether to use item publication date for email Date header.
+
+        Returns:
+            The updated Feed object.
+
+        Raises:
+            ValueError: If no fields are provided.
+        """
+        updates: dict[str, str | int] = {}
+        if url is not None:
+            updates["url"] = url
+        if dedup_key is not None:
+            updates["dedup_key"] = dedup_key
+        if format is not None:
+            updates["format"] = format
+        if item_date is not None:
+            updates["item_date"] = int(item_date)
+
+        if not updates:
+            raise ValueError("No fields to update.")
+
+        set_clause = ", ".join(f"{col} = ?" for col in updates)
+        values = [*updates.values(), feed_id]
+
+        self.connection.execute(
+            f"UPDATE feeds SET {set_clause} WHERE id = ?",  # noqa: S608
+            values,
+        )
+        self.connection.commit()
+
+        row = self.connection.execute(
+            "SELECT id, url, recipient, dedup_key, format, item_date, paused, created_at "
+            "FROM feeds WHERE id = ?",
+            (feed_id,),
+        ).fetchone()
+        return self._row_to_feed(row)

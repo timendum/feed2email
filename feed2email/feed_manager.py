@@ -187,6 +187,60 @@ class FeedManager:
         if dedup_values:
             self._db.mark_many_seen(feed.id, dedup_values, urls)
 
+    def edit_feed(
+        self,
+        feed_ref: str | int,
+        url: str | None = None,
+        dedup_key: str | None = None,
+        format: str | None = None,
+        item_date: bool | None = None,
+    ) -> Feed:
+        """Edit properties of an existing feed.
+
+        Args:
+            feed_ref: Feed URL or Feed_ID identifying the feed to edit.
+            url: New feed URL (validated for format and reachability).
+            dedup_key: New deduplication key ('id', 'link', or 'title').
+            format: New email format ('text' or 'html').
+            item_date: Whether to use item publication date for email Date header.
+
+        Returns:
+            The updated Feed object.
+
+        Raises:
+            FeedError: If the feed is not found, validation fails, or the new
+                URL is unreachable.
+        """
+        if url is None and dedup_key is None and format is None and item_date is None:
+            raise FeedError("Nothing to update. Specify at least one option to change.")
+
+        feed = self._db.get_feed(feed_ref)
+        if feed is None:
+            raise FeedError(f"Feed not found: {feed_ref}")
+
+        if url is not None:
+            if not validate_url(url):
+                raise FeedError(f"Invalid URL: {url}")
+
+            # Check for duplicates (skip if unchanged)
+            if url != feed.url:
+                existing = self._db.get_feed(url)
+                if existing is not None:
+                    raise FeedError(f"Feed already exists with that URL: {url}")
+
+                # Validate the new URL is reachable
+                result = self._fetcher.fetch(url)
+                if not result.success:
+                    raise FeedError(f"Failed to fetch feed at new URL: {result.error}")
+
+        return self._db.update_feed(
+            feed.id,
+            url=url,
+            dedup_key=dedup_key,
+            format=format,
+            item_date=item_date,
+        )
+
     @staticmethod
     def _get_dedup_value(item: FeedItem, dedup_key: str) -> str | None:
         """Extract the deduplication value from a feed item.
