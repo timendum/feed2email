@@ -26,18 +26,20 @@ jobs:
           enable-cache: true
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
+      - name: Install just
+        uses: extractions/setup-just@v4
       - name: Install the project
-        run: uv sync --all-extras --dev
+        run: just install
       - name: Lint with ruff
-        run: uv run ruff check .
+        run: just lint .
       - name: Format with ruff
-        run: uv run ruff format --check .
+        run: just fmt-check .
       - name: Test with unittest
-        run: uv run python -m unittest discover -s tests
+        run: just test
       - name: Lint with ty
-        run: uv run ty check
+        run: just typecheck
       - name: Build
-        run: uv build
+        run: just build
       - uses: actions/upload-artifact@v4
         with:
           name: wheel

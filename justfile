@@ -4,7 +4,7 @@ help:
   @just --list --unsorted
 
 install:
-    
+    uv sync --all-extras --dev
 
 # build package
 build:
