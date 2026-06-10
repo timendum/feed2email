@@ -24,7 +24,7 @@ class FeedManager:
         url: str,
         recipient: str | None = None,
         dedup_key: str = "link",
-        format: str = "text",
+        format: str = "html",
         item_date: bool = False,
         mark_read: bool = False,
     ) -> Feed:

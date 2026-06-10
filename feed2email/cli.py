@@ -203,8 +203,8 @@ def init(ctx):
     "--format",
     "fmt",
     type=click.Choice(["text", "html"]),
-    default="text",
-    help="Email format (default: text).",
+    default="html",
+    help="Email format (default: html).",
 )
 @click.option(
     "--item-date",
