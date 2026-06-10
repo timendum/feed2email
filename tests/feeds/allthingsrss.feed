@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>RSS News Sources Readers Help Syndication &#8211; All Things RSS</title>
+	<atom:link href="https://allthingsrss.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://allthingsrss.com</link>
+	<description></description>
+	<lastBuildDate>Thu, 27 Mar 2025 18:46:36 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.0</generator>
+
+<image>
+	<url>https://allthingsrss.com/wp-content/uploads/2025/03/cropped-cropped-logo-32x32.png</url>
+	<title>RSS News Sources Readers Help Syndication &#8211; All Things RSS</title>
+	<link>https://allthingsrss.com</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Author Alerts: New Releases Through RSS</title>
+		<link>https://allthingsrss.com/author-alerts-new-releases-through-rss/</link>
+		
+		<dc:creator><![CDATA[Henry Thomas]]></dc:creator>
+		<pubDate>Thu, 27 Mar 2025 18:46:36 +0000</pubDate>
+				<category><![CDATA[Uncategorized]]></category>
+		<guid isPermaLink="false">https://allthingsrss.com/?p=51</guid>
+
+					<description><![CDATA[One of the things I really love about RSS is that it’s a great way to keep track of news [&#8230;]]]></description>
+										<content:encoded><![CDATA[
+<div class="wp-block-uagb-image uagb-block-ac8db3b4 wp-block-uagb-image--layout-default wp-block-uagb-image--effect-static wp-block-uagb-image--align-none"><figure class="wp-block-uagb-image__figure"><img decoding="async" srcset="https://allthingsrss.com/wp-content/uploads/2025/03/3.png ,https://allthingsrss.com/wp-content/uploads/2025/03/3.png 780w, https://allthingsrss.com/wp-content/uploads/2025/03/3.png 360w" sizes="auto, (max-width: 480px) 150px" src="https://allthingsrss.com/wp-content/uploads/2025/03/3.png" alt="" class="uag-image-52" width="472" height="249" title="3" loading="lazy" role="img"/></figure></div>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph">One of the things I really love about RSS is that it’s a great way to keep track of news up to the minute. Looking at the CNN recent stories feed, there is barely 2 hours separating the the first and last of the 20 stories in the feed.</p>
+
+
+
+<p class="wp-block-paragraph">But what RSS is even better for are sites that may go weeks or months between updates. Maybe you browse to www.cnn.com everyday in the morning, but you probably don’t check a dozen low-frequency sites everyday. With RSS you can sit back and let new content come to you on its own schedule.</p>
+
+
+
+<p class="wp-block-paragraph">A new tool that embodies this is Author Alerts. It lets you create a list of authors and publishers then produces an RSS feed of upcoming books and, optionally, audiobooks. Most likely each author only has a few such events every year, so it could months before you got a little reminder that a new book you might want is coming out.</p>
+
+
+
+<p class="wp-block-paragraph">Oddly enough I put in two living authors (Terry Pratchett and Neal Stephenson) and two dead (Isaac Asimov and Robert Heinlein) into my test list. Asimov and Heinlein both apparently have 3 releases coming up in 2010, while Pratchett has 2 and Stephenson only 1…</p>
+
+
+
+<p class="wp-block-paragraph">Unfortunately using your Author Alerts RSS outside of your browser is a little more clunky than perhaps it needs to be. The site authors admit that it’s a work in progress, so I hope they find a more elegant way to provide access to your feed.</p>
+
+
+
+<p class="wp-block-paragraph">To make your Author Alerts RSS feed accessible by you:</p>
+
+
+
+<ol class="wp-block-list">
+<li>Add authors and/or publishers to your list</li>
+
+
+
+<li>Click Share</li>
+
+
+
+<li>Click Make Public</li>
+
+
+
+<li>Click Done</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">Now the “Upcoming releases feed” and “Recent releases feed” will be accessible by your feed reader<br>And yes, this means you have to make your list available to the public for you to access your own feed at all. I would prefer if Author Alerts provided a private link that I could use on my own and share with people I chose.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+]]></content:encoded>
+					
+		
+		
+			</item>
+	</channel>
+</rss>
