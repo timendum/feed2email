@@ -29,4 +29,4 @@ fmt-check *ARGS:
 format: fmt
 
 typecheck:
-  uvx ty check
+  uv run ty check
