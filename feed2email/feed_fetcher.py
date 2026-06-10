@@ -76,5 +76,5 @@ class FeedFetcher:
             title=item.title,
             link=item.url,
             content=item.content,
-            published=item.published,
+            published=item.update,
         )
