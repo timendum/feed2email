@@ -15,6 +15,8 @@ jobs:
       uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b
       with:
         enable-cache: true
+    - name: Install just
+      uses: extractions/setup-just@v4
     - name: Install dependencies
       run: just install
     - name: Lint with ruff
