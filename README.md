@@ -109,7 +109,7 @@ Exit codes: 0 = all feeds processed, 1 = partial failure (some feeds or items fa
 For contributors and developers working on feed2email itself.
 
 ```sh
-git clone https://github.com/<owner>/feed2email.git
+git clone https://github.com/timendum/feed2email.git
 cd feed2email
 uv sync                # install all dependencies including dev extras
 ```

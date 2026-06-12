@@ -123,7 +123,7 @@ class Runner:
             return
 
         # Compute subject
-        subject = self._renderer.make_subject(item)
+        subject = self._renderer.make_subject(item, feed, feed_title)
 
         if dry_run:
             # Display one line per item: recipient, subject, feed URL
@@ -132,7 +132,7 @@ class Runner:
             return
 
         # Render email body
-        body = self._renderer.render(item, feed_title, feed.url, feed.format)
+        body = self._renderer.render_body(item, feed, feed_title, feed.format)
 
         # Compute date header
         date = self._compute_date(item, feed)

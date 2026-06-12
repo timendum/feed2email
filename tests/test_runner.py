@@ -34,7 +34,7 @@ def mock_renderer():
     """Create a mock TemplateRenderer."""
     renderer = MagicMock()
     renderer.make_subject.return_value = "Test Subject"
-    renderer.render.return_value = "Test Body"
+    renderer.render_body.return_value = "Test Body"
     return renderer
 
 
