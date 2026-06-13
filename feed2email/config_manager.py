@@ -59,30 +59,45 @@ class ConfigManager:
 
     def validate_value(self, key: str, value: str) -> tuple[bool, str | None]:
         """Validate value for the given key. Returns (is_valid, error_message)."""
-        if key == "smtp.port":
-            try:
-                port = int(value)
-            except ValueError:
-                return False, "Port must be an integer between 1 and 65535"
-            if not validate_port(port):
-                return False, "Port must be an integer between 1 and 65535"
-
-        elif key == "smtp.encryption":
-            valid_values = ("none", "starttls", "ssl")
-            if value not in valid_values:
-                return False, f"Encryption must be one of: {', '.join(valid_values)}"
-
-        elif key == "smtp.from":
-            if not validate_email(value):
-                return False, "Invalid email address format"
-
-        elif key == "default-recipient":
-            if not validate_email(value):
-                return False, "Invalid email address format"
-
-        elif key == "user-agent":
-            if not value.strip():
-                return False, "User-Agent cannot be empty"
+        match key:
+            case "smtp.port":
+                try:
+                    port = int(value)
+                except ValueError:
+                    return False, "Port must be an integer between 1 and 65535"
+                if not validate_port(port):
+                    return False, "Port must be an integer between 1 and 65535"
+            case "smtp.encryption":
+                valid_values = ("none", "starttls", "ssl")
+                if value not in valid_values:
+                    return False, f"Encryption must be one of: {', '.join(valid_values)}"
+            case "smtp.from" | "default-recipient":
+                if not validate_email(value):
+                    return False, "Invalid email address format"
+            case "user-agent":
+                if not value.strip():
+                    return False, "User-Agent cannot be empty"
+            case "retry.max":
+                try:
+                    n = int(value)
+                except ValueError:
+                    return False, "Retry max must be an integer >= 0"
+                if n < 0:
+                    return False, "Retry max must be an integer >= 0"
+            case "retry.backoff":
+                try:
+                    f = float(value)
+                except ValueError:
+                    return False, "Retry backoff must be a number >= 0"
+                if f < 0:
+                    return False, "Retry backoff must be a number >= 0"
+            case "host-delay":
+                try:
+                    f = float(value)
+                except ValueError:
+                    return False, "Host delay must be a number >= 0 (seconds)"
+                if f < 0:
+                    return False, "Host delay must be a number >= 0 (seconds)"
 
         return True, None
 

@@ -18,6 +18,9 @@ VALID_CONFIG_KEYS = (
     "smtp.password",
     "smtp.encryption",
     "user-agent",
+    "retry.max",
+    "retry.backoff",
+    "host-delay",
 )
 
 

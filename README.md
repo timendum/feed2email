@@ -80,7 +80,7 @@ feed2email add https://example.com/rss.xml \
 
 Required keys: `smtp.host`, `smtp.port`, `smtp.from`, `smtp.encryption`, `default-recipient`.
 
-Optional keys: `smtp.user`, `smtp.password`, `user-agent`.
+Optional keys: `smtp.user`, `smtp.password`, `user-agent`, `retry.max`, `retry.backoff`, `host-delay`.
 
 ```sh
 feed2email config smtp.host mail.example.com
@@ -88,6 +88,30 @@ feed2email config smtp.port 587
 feed2email config smtp.encryption starttls
 feed2email config                          # list all
 feed2email config smtp.password --unset    # remove a value
+```
+
+#### Retry
+
+By default, HTTP requests to fetch feeds are not retried.  
+You can enable automatic retries for transient errors with exponential backoff:
+
+```sh
+feed2email config retry.max 3        # retry up to 3 times (default: 0, no retry)
+feed2email config retry.backoff 0.8  # backoff factor in seconds (default: 0.5)
+```
+
+Check [requests documentation](https://requests.readthedocs.io/en/latest/user/advanced/#example-automatic-retries)
+for more informations.
+
+#### Host delay
+
+If you have multiple feeds on the same host, 
+you can set a delay (in seconds) between requests to avoid hammering the server:
+
+```sh
+feed2email config host-delay 2      # wait 2 seconds between requests to the same host
+feed2email config host-delay 0.5    # fractional seconds are supported
+feed2email config host-delay 0      # disable (default)
 ```
 
 ### Dry run

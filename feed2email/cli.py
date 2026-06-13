@@ -424,15 +424,17 @@ def run(ctx, dry_run):
                     "Run 'feed2email config' to set the required SMTP parameters."
                 )
 
-        # Get user-agent from config or use default
-        user_agent = cm.get("user-agent") or "feed2email"
-
         # Instantiate dependencies
         from feed2email.email_sender import EmailSender
         from feed2email.feed_fetcher import FeedFetcher
         from feed2email.template_renderer import TemplateRenderer
 
-        fetcher = FeedFetcher(user_agent=user_agent)
+        fetcher = FeedFetcher(
+            user_agent=cm.get("user-agent") or "feed2email",
+            retry_max=int(cm.get("retry.max") or 0),
+            retry_backoff=float(cm.get("retry.backoff") or 0.5),
+            host_delay=float(cm.get("host-delay") or 0),
+        )
 
         mailer = None
         if not dry_run:
