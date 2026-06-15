@@ -2,7 +2,6 @@ import pytest
 
 from feed2email.config_manager import ConfigManager
 from feed2email.db import Database
-from feed2email.models import SmtpConfig
 
 
 @pytest.fixture
@@ -35,47 +34,6 @@ class TestConfig:
         config_mgr.set("smtp.port", "587")
         result = config_mgr.list_all()
         assert result == {"smtp.host": "mail.example.com", "smtp.port": "587"}
-
-    def test_returns_none_when_incomplete(self, config_mgr: ConfigManager) -> None:
-        config_mgr.set("smtp.host", "mail.example.com")
-        assert config_mgr.get_smtp() is None
-
-    def test_returns_smtp_config_when_complete_with_auth(self, config_mgr: ConfigManager) -> None:
-        config_mgr.set("smtp.host", "mail.example.com")
-        config_mgr.set("smtp.port", "587")
-        config_mgr.set("smtp.from", "sender@example.com")
-        config_mgr.set("smtp.user", "user@example.com")
-        config_mgr.set("smtp.password", "secret")
-        config_mgr.set("smtp.encryption", "starttls")
-
-        smtp = config_mgr.get_smtp()
-        assert smtp is not None
-        assert smtp == SmtpConfig(
-            host="mail.example.com",
-            port=587,
-            from_address="sender@example.com",
-            encryption="starttls",
-            username="user@example.com",
-            password="secret",
-        )
-
-    def test_returns_smtp_config_without_auth(self, config_mgr: ConfigManager) -> None:
-        """SMTP config is valid without username and password (relay server)."""
-        config_mgr.set("smtp.host", "mail.example.com")
-        config_mgr.set("smtp.port", "25")
-        config_mgr.set("smtp.from", "sender@example.com")
-        config_mgr.set("smtp.encryption", "none")
-
-        smtp = config_mgr.get_smtp()
-        assert smtp is not None
-        assert smtp == SmtpConfig(
-            host="mail.example.com",
-            port=25,
-            from_address="sender@example.com",
-            encryption="none",
-            username=None,
-            password=None,
-        )
 
     def test_returns_none_when_not_set(self, config_mgr: ConfigManager) -> None:
         assert config_mgr.get_default_recipient() is None
@@ -150,38 +108,3 @@ class TestSmtp:
     def test_user_agent_stored_and_retrieved(self, config_mgr: ConfigManager) -> None:
         config_mgr.set("user-agent", "CustomAgent/2.0")
         assert config_mgr.get("user-agent") == "CustomAgent/2.0"
-
-    def test_all_missing_when_empty(self, config_mgr: ConfigManager) -> None:
-        missing = config_mgr.get_missing_smtp_keys()
-        assert set(missing) == {
-            "smtp.host",
-            "smtp.port",
-            "smtp.from",
-            "smtp.encryption",
-        }
-
-    def test_some_missing(self, config_mgr: ConfigManager) -> None:
-        config_mgr.set("smtp.host", "mail.example.com")
-        config_mgr.set("smtp.port", "587")
-        missing = config_mgr.get_missing_smtp_keys()
-        assert "smtp.host" not in missing
-        assert "smtp.port" not in missing
-        assert "smtp.from" in missing
-        assert "smtp.encryption" in missing
-
-    def test_none_missing_when_all_required_set(self, config_mgr: ConfigManager) -> None:
-        config_mgr.set("smtp.host", "mail.example.com")
-        config_mgr.set("smtp.port", "587")
-        config_mgr.set("smtp.from", "sender@example.com")
-        config_mgr.set("smtp.encryption", "starttls")
-        assert config_mgr.get_missing_smtp_keys() == []
-
-    def test_user_and_password_not_required(self, config_mgr: ConfigManager) -> None:
-        """smtp.user and smtp.password are optional, not in missing keys."""
-        config_mgr.set("smtp.host", "mail.example.com")
-        config_mgr.set("smtp.port", "587")
-        config_mgr.set("smtp.from", "sender@example.com")
-        config_mgr.set("smtp.encryption", "starttls")
-        missing = config_mgr.get_missing_smtp_keys()
-        assert "smtp.user" not in missing
-        assert "smtp.password" not in missing

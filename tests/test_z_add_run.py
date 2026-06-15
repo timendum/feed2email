@@ -33,7 +33,6 @@ class _QuietHandler(SimpleHTTPRequestHandler):
 @pytest.fixture
 def feed_server(monkeypatch):
     """Spin up a local HTTP server serving test feed files."""
-    monkeypatch.setenv("NO_PROXY", "127.0.0.1,localhost")
     server = HTTPServer(("127.0.0.1", 0), _QuietHandler)
     port = server.server_address[1]
     thread = threading.Thread(target=server.serve_forever)
@@ -76,9 +75,7 @@ def test_e2e_add_run(tmp_path, feed_server, feed_file):
         # init
         _configure(config_mgr)
         assert config_mgr.is_setup_complete()
-        smtp_config = config_mgr.get_smtp()
-        assert smtp_config is not None
-        mailer = EmailSender(smtp_config)
+        mailer = EmailSender.from_db(db)
 
         # add
         feed = feed_mgr.add_feed(url)

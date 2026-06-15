@@ -15,7 +15,7 @@ test *ARGS:
   uv run -m pytest {{ARGS}}
 
 # sanity checks
-check: lint typecheck test fmt-check
+check: lint typecheck fmt-check test
 
 lint *ARGS:
   uv run ruff check {{ARGS}}

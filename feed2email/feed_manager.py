@@ -1,7 +1,7 @@
 import logging
 
 from feed2email.db import Database
-from feed2email.feed_fetcher import DEFAULT_USER_AGENT, FeedFetcher
+from feed2email.feed_fetcher import FeedFetcher
 from feed2email.models import Feed, FeedItem, validate_email, validate_url
 
 logger = logging.getLogger(__name__)
@@ -16,14 +16,7 @@ class FeedManager:
 
     def __init__(self, db: Database) -> None:
         self._db = db
-        user_agent = db.get_config("user-agent") or DEFAULT_USER_AGENT
-        retry_max = int(db.get_config("retry.max") or 0)
-        retry_backoff = float(db.get_config("retry.backoff") or 0.5)
-        self._fetcher = FeedFetcher(
-            user_agent=user_agent,
-            retry_max=retry_max,
-            retry_backoff=retry_backoff,
-        )
+        self._fetcher = FeedFetcher.from_db(db)
 
     def add_feed(
         self,

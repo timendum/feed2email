@@ -408,49 +408,16 @@ def run(ctx, dry_run):
 
     db = _get_database(ctx)
     try:
-        cm = ConfigManager(db)
         fm = FeedManager(db)
-
         feeds = fm.list_feeds()
         if not feeds:
             click.echo("No feeds configured.")
             sys.exit(0)
 
-        if not dry_run:
-            missing_keys = cm.get_missing_smtp_keys()
-            if missing_keys:
-                raise click.ClickException(
-                    f"SMTP configuration incomplete. Missing: {', '.join(missing_keys)}\n"
-                    "Run 'feed2email config' to set the required SMTP parameters."
-                )
-
-        # Instantiate dependencies
-        from feed2email.email_sender import EmailSender
-        from feed2email.feed_fetcher import FeedFetcher
-        from feed2email.template_renderer import TemplateRenderer
-
-        fetcher = FeedFetcher(
-            user_agent=cm.get("user-agent") or "feed2email",
-            retry_max=int(cm.get("retry.max") or 0),
-            retry_backoff=float(cm.get("retry.backoff") or 0.5),
-            host_delay=float(cm.get("host-delay") or 0),
-        )
-
-        mailer = None
-        if not dry_run:
-            smtp_config = cm.get_smtp()
-            if smtp_config is None:
-                raise click.ClickException(
-                    "SMTP is not configured. Run 'feed2email config' to set it up."
-                )
-            mailer = EmailSender(smtp_config)
-
-        renderer = TemplateRenderer()
-
         from feed2email.runner import Runner
 
-        runner = Runner(db=db, fetcher=fetcher, mailer=mailer, renderer=renderer)
-        result = runner.run(dry_run=dry_run)
+        runner = Runner(db=db, dry_run=dry_run)
+        result = runner.run()
 
         exit_code = runner.compute_exit_code(result)
         sys.exit(exit_code)

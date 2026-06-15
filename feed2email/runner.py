@@ -18,20 +18,19 @@ class Runner:
     def __init__(
         self,
         db: Database,
-        fetcher: FeedFetcher,
-        mailer: EmailSender | None,
-        renderer: TemplateRenderer,
+        dry_run: bool = False,
+        fetcher: FeedFetcher | None = None,
+        mailer: EmailSender | None = None,
+        renderer: TemplateRenderer | None = None,
     ) -> None:
         self._db = db
-        self._fetcher = fetcher
-        self._mailer = mailer
-        self._renderer = renderer
+        self._dry_run = dry_run
+        self._fetcher = fetcher or FeedFetcher.from_db(db)
+        self._renderer = renderer or TemplateRenderer()
+        self._mailer = mailer or EmailSender.from_db(db)
 
-    def run(self, dry_run: bool = False) -> RunResult:
+    def run(self) -> RunResult:
         """Execute the full run cycle.
-
-        Args:
-            dry_run: If True, display items without sending or recording.
 
         Returns:
             RunResult with counts and implicit exit code.
@@ -52,7 +51,7 @@ class Runner:
             user_agent = self._db.get_config("user-agent") or "feed2email"
 
             for feed in feeds:
-                self._process_feed(feed, dry_run, user_agent, result)
+                self._process_feed(feed, self._dry_run, user_agent, result)
         finally:
             self._db.release_lock()
 

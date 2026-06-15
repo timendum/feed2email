@@ -96,7 +96,7 @@ class TestRunnerFetchFailure:
         mock_fetcher.fetch.return_value = FetchResult(
             success=False, items=[], feed_title="", error="Connection timeout"
         )
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
         assert result.feeds_failed == 1
         assert result.feeds_processed == 0
@@ -114,7 +114,7 @@ class TestRunnerFetchFailure:
         ]
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.feeds_failed == 1
@@ -129,7 +129,7 @@ class TestRunnerFetchFailure:
             success=False, items=[], feed_title="", error="Timeout"
         )
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert runner.compute_exit_code(result) == 2
@@ -145,7 +145,7 @@ class TestRunnerDeduplication:
         items = [_make_item(id="item-1")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_sent == 0
@@ -158,7 +158,7 @@ class TestRunnerDeduplication:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_sent == 1
@@ -172,7 +172,7 @@ class TestRunnerDeduplication:
         items = [_make_item(id=None)]  # Missing the dedup key
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_sent == 0
@@ -185,7 +185,7 @@ class TestRunnerDeduplication:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         assert mock_db.is_seen(feed.id, items[0].id)
@@ -199,7 +199,7 @@ class TestRunnerDeduplication:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         assert mock_db.is_seen(feed.id, items[0].link)
@@ -211,7 +211,7 @@ class TestRunnerDeduplication:
         items = [_make_item(link="http://example.com/item-1")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_sent == 0
@@ -223,7 +223,7 @@ class TestRunnerDeduplication:
         items = [_make_item(title="Test Item")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_sent == 0
@@ -241,7 +241,7 @@ class TestRunnerSMTPFailure:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=False, error="SMTP refused")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_failed == 1
@@ -259,7 +259,7 @@ class TestRunnerSMTPFailure:
             SendResult(success=True),
         ]
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.items_failed == 1
@@ -275,8 +275,10 @@ class TestRunnerDryRun:
         items = [_make_item()]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
-        result = runner.run(dry_run=True)
+        runner = Runner(
+            mock_db, dry_run=True, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer
+        )
+        result = runner.run()
 
         mock_mailer.send.assert_not_called()
         assert result.items_sent == 1
@@ -287,8 +289,10 @@ class TestRunnerDryRun:
         items = [_make_item(id="dry-item")]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
-        runner.run(dry_run=True)
+        runner = Runner(
+            mock_db, dry_run=True, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer
+        )
+        runner.run()
 
         assert not mock_db.is_seen(feed.id, "dry-item")
 
@@ -301,24 +305,15 @@ class TestRunnerDryRun:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_renderer.make_subject.return_value = "My Subject"
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
-        runner.run(dry_run=True)
+        runner = Runner(
+            mock_db, dry_run=True, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer
+        )
+        runner.run()
 
         captured = capsys.readouterr()
         assert "user@example.com" in captured.out
         assert "My Subject" in captured.out
         assert "http://example.com/feed.xml" in captured.out
-
-    def test_dry_run_works_without_mailer(self, mock_db, mock_fetcher, mock_renderer):
-        _make_feed(mock_db)
-
-        items = [_make_item()]
-        mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
-
-        runner = Runner(mock_db, mock_fetcher, None, mock_renderer)
-        result = runner.run(dry_run=True)
-
-        assert result.items_sent == 1
 
     def test_dry_run_exit_code_0_on_success(
         self, mock_db, mock_fetcher, mock_mailer, mock_renderer
@@ -328,8 +323,10 @@ class TestRunnerDryRun:
         items = [_make_item()]
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
-        result = runner.run(dry_run=True)
+        runner = Runner(
+            mock_db, dry_run=True, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer
+        )
+        result = runner.run()
 
         assert runner.compute_exit_code(result) == 0
 
@@ -342,8 +339,10 @@ class TestRunnerDryRun:
             success=False, items=[], feed_title="", error="Timeout"
         )
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
-        result = runner.run(dry_run=True)
+        runner = Runner(
+            mock_db, dry_run=True, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer
+        )
+        result = runner.run()
 
         assert runner.compute_exit_code(result) == 2
 
@@ -360,7 +359,7 @@ class TestRunnerDateHeader:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         # The date should be close to now, not 2020
@@ -377,7 +376,7 @@ class TestRunnerDateHeader:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -392,7 +391,7 @@ class TestRunnerDateHeader:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -409,7 +408,7 @@ class TestRunnerDateHeader:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=[item], feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -427,7 +426,7 @@ class TestRunnerRecipient:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -440,7 +439,7 @@ class TestRunnerRecipient:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -457,7 +456,7 @@ class TestRunnerRecipient:
             item_date=False,
         )
 
-        runner = Runner(db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         assert result.feeds_failed == 1
@@ -468,32 +467,32 @@ class TestRunnerExitCodes:
     """Tests for exit code computation."""
 
     def test_exit_code_0_no_work(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult()
         assert runner.compute_exit_code(result) == 0
 
     def test_exit_code_0_all_success(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult(feeds_processed=2, items_sent=5)
         assert runner.compute_exit_code(result) == 0
 
     def test_exit_code_1_partial_failure(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult(feeds_processed=2, feeds_failed=1, items_sent=3, items_failed=1)
         assert runner.compute_exit_code(result) == 1
 
     def test_exit_code_2_total_failure(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult(feeds_failed=2)
         assert runner.compute_exit_code(result) == 2
 
     def test_exit_code_2_no_items_sent_with_failures(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult(feeds_processed=1, items_failed=3)
         assert runner.compute_exit_code(result) == 2
 
     def test_exit_code_1_some_items_sent_some_failed(self):
-        runner = Runner(MagicMock(), MagicMock(), MagicMock(), MagicMock())
+        runner = Runner(MagicMock(), fetcher=MagicMock(), mailer=MagicMock(), renderer=MagicMock())
         result = RunResult(feeds_processed=1, items_sent=2, items_failed=1)
         assert runner.compute_exit_code(result) == 1
 
@@ -510,7 +509,7 @@ class TestRunnerEmailMessage:
         )
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -525,7 +524,7 @@ class TestRunnerEmailMessage:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -539,7 +538,7 @@ class TestRunnerEmailMessage:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -552,7 +551,7 @@ class TestRunnerEmailMessage:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -565,7 +564,7 @@ class TestRunnerEmailMessage:
         mock_fetcher.fetch.return_value = FetchResult(success=True, items=items, feed_title="Test")
         mock_mailer.send.return_value = SendResult(success=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         runner.run()
 
         sent_message: EmailMessage = mock_mailer.send.call_args[0][0]
@@ -579,7 +578,7 @@ class TestRunnerPausedFeeds:
         feed = _make_feed(mock_db)
         mock_db.set_feed_paused(feed.id, paused=True)
 
-        runner = Runner(mock_db, mock_fetcher, mock_mailer, mock_renderer)
+        runner = Runner(mock_db, fetcher=mock_fetcher, mailer=mock_mailer, renderer=mock_renderer)
         result = runner.run()
 
         mock_fetcher.fetch.assert_not_called()

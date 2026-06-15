@@ -1,7 +1,5 @@
 from feed2email.db import Database
-from feed2email.models import REQUIRED_KEYS, SmtpConfig, validate_email, validate_port
-
-_REQUIRED_SMTP_KEYS = ["smtp.host", "smtp.port", "smtp.from", "smtp.encryption"]
+from feed2email.models import REQUIRED_KEYS, validate_email, validate_port
 
 
 class ConfigManager:
@@ -36,22 +34,6 @@ class ConfigManager:
     def list_all(self) -> dict[str, str]:
         """Return all configured key-value pairs."""
         return self.db.get_all_config()
-
-    def get_smtp(self) -> SmtpConfig | None:
-        """Return valid SmtpConfig or None."""
-        config = self.db.get_all_config()
-        for key in _REQUIRED_SMTP_KEYS:
-            if key not in config:
-                return None
-
-        return SmtpConfig(
-            host=config["smtp.host"],
-            port=int(config["smtp.port"]),
-            from_address=config["smtp.from"],
-            encryption=config["smtp.encryption"],
-            username=config.get("smtp.user"),
-            password=config.get("smtp.password"),
-        )
 
     def get_default_recipient(self) -> str | None:
         """Return the default recipient email, or None if not configured."""
@@ -100,11 +82,6 @@ class ConfigManager:
                     return False, "Host delay must be a number >= 0 (seconds)"
 
         return True, None
-
-    def get_missing_smtp_keys(self) -> list[str]:
-        """Return list of required but not set SMTP keys."""
-        config = self.db.get_all_config()
-        return [key for key in _REQUIRED_SMTP_KEYS if key not in config]
 
     def is_setup_complete(self) -> bool:
         """Return True only when all Required_Configuration keys have non-empty values."""

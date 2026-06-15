@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import TYPE_CHECKING
 from urllib.parse import urlparse
 
 import feedendum
@@ -9,6 +10,9 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from feed2email.models import FeedItem, FetchResult
+
+if TYPE_CHECKING:
+    from feed2email.db import Database
 
 DEFAULT_USER_AGENT = "feed2email"
 
@@ -42,6 +46,15 @@ class FeedFetcher:
             adapter = HTTPAdapter(max_retries=retry)
             self._session.mount("http://", adapter)
             self._session.mount("https://", adapter)
+
+    @classmethod
+    def from_db(cls, db: "Database") -> "FeedFetcher":
+        return cls(
+            user_agent=db.get_config("user-agent") or DEFAULT_USER_AGENT,
+            retry_max=int(db.get_config("retry.max") or 0),
+            retry_backoff=float(db.get_config("retry.backoff") or 0.5),
+            host_delay=float(db.get_config("host-delay") or 0),
+        )
 
     def fetch(self, url: str) -> FetchResult:
         """Fetch a feed from the given URL and return parsed items."""

@@ -3,8 +3,12 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.utils import format_datetime
+from typing import TYPE_CHECKING
 
 from feed2email.models import EmailMessage, SendResult, SmtpConfig
+
+if TYPE_CHECKING:
+    from feed2email.db import Database
 
 
 class EmailSender:
@@ -13,11 +17,29 @@ class EmailSender:
     def __init__(self, config: SmtpConfig) -> None:
         self.config = config
 
+    @classmethod
+    def from_db(cls, db: "Database") -> "EmailSender":
+        """Raises:
+        RuntimeError: If required SMTP configuration keys are missing.
+        """
+        config = db.get_all_config()
+        required = ("smtp.host", "smtp.port", "smtp.from", "smtp.encryption")
+        missing = [k for k in required if k not in config]
+        if missing:
+            raise RuntimeError(f"SMTP configuration incomplete. Missing: {', '.join(missing)}")
+
+        smtp_config = SmtpConfig(
+            host=config["smtp.host"],
+            port=int(config["smtp.port"]),
+            from_address=config["smtp.from"],
+            encryption=config["smtp.encryption"],
+            username=config.get("smtp.user"),
+            password=config.get("smtp.password"),
+        )
+        return cls(smtp_config)
+
     def send(self, message: EmailMessage) -> SendResult:
         """Send an email message via SMTP.
-
-        Constructs the email with proper headers (From, To, Subject, Date,
-        Content-Type) and delivers it using the configured SMTP settings.
 
         Login is only performed when username and password are both configured.
 
