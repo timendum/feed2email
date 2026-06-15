@@ -190,7 +190,6 @@ class FeedManager:
         self,
         feed_ref: str | int,
         url: str | None = None,
-        dedup_key: str | None = None,
         format: str | None = None,
         item_date: bool | None = None,
     ) -> Feed:
@@ -199,7 +198,6 @@ class FeedManager:
         Args:
             feed_ref: Feed URL or Feed_ID identifying the feed to edit.
             url: New feed URL (validated for format and reachability).
-            dedup_key: New deduplication key ('id', 'link', or 'title').
             format: New email format ('text' or 'html').
             item_date: Whether to use item publication date for email Date header.
 
@@ -210,7 +208,7 @@ class FeedManager:
             FeedError: If the feed is not found, validation fails, or the new
                 URL is unreachable.
         """
-        if url is None and dedup_key is None and format is None and item_date is None:
+        if url is None and format is None and item_date is None:
             raise FeedError("Nothing to update. Specify at least one option to change.")
 
         feed = self._db.get_feed(feed_ref)
@@ -235,7 +233,6 @@ class FeedManager:
         return self._db.update_feed(
             feed.id,
             url=url,
-            dedup_key=dedup_key,
             format=format,
             item_date=item_date,
         )

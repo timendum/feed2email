@@ -114,6 +114,20 @@ feed2email config host-delay 0.5    # fractional seconds are supported
 feed2email config host-delay 0      # disable (default)
 ```
 
+### Changing the dedup key
+
+The dedup key cannot be changed in place because switching it would cause
+previously-delivered items to be re-sent.
+Instead, remove the feed and add it back with the new key:
+
+```sh
+feed2email remove https://example.com/feed.xml
+feed2email add https://example.com/feed.xml --dedup-key title --mark-read
+```
+
+Use `--mark-read` to avoid receiving duplicates of items that were already
+delivered under the old key.
+
 ### Dry run
 
 ```sh

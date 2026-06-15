@@ -295,19 +295,6 @@ class TestEditCommand:
         _setup_required_config(runner, db_path)
         runner.invoke(cli, ["--db", db_path, "add", url])
 
-    def test_edit_dedup_key_by_id(self, runner, db_path, patch_fetch):
-        self._add_feed(runner, db_path, patch_fetch)
-        result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--dedup-key", "link"])
-        assert result.exit_code == 0
-
-    def test_edit_dedup_key_by_url(self, runner, db_path, patch_fetch):
-        self._add_feed(runner, db_path, patch_fetch)
-        result = runner.invoke(
-            cli,
-            ["--db", db_path, "edit", "https://example.com/feed.xml", "--dedup-key", "title"],
-        )
-        assert result.exit_code == 0
-
     def test_edit_format(self, runner, db_path, patch_fetch):
         self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(cli, ["--db", db_path, "edit", "1", "--format", "html"])
@@ -336,7 +323,7 @@ class TestEditCommand:
         self._add_feed(runner, db_path, patch_fetch)
         result = runner.invoke(
             cli,
-            ["--db", db_path, "edit", "1", "--dedup-key", "link", "--format", "html"],
+            ["--db", db_path, "edit", "1", "--format", "html", "--item-date"],
         )
         assert result.exit_code == 0
 
@@ -347,14 +334,14 @@ class TestEditCommand:
 
     def test_edit_nonexistent_feed_errors(self, runner, db_path):
         _setup_required_config(runner, db_path)
-        result = runner.invoke(cli, ["--db", db_path, "edit", "999", "--dedup-key", "link"])
+        result = runner.invoke(cli, ["--db", db_path, "edit", "999", "--format", "text"])
         assert result.exit_code != 0
 
     def test_edit_nonexistent_url_errors(self, runner, db_path):
         _setup_required_config(runner, db_path)
         result = runner.invoke(
             cli,
-            ["--db", db_path, "edit", "https://nonexistent.com/feed.xml", "--dedup-key", "link"],
+            ["--db", db_path, "edit", "https://nonexistent.com/feed.xml", "--format", "text"],
         )
         assert result.exit_code != 0
 

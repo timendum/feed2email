@@ -250,12 +250,6 @@ def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
 @click.argument("feed_ref")
 @click.option("--url", default=None, help="New feed URL.")
 @click.option(
-    "--dedup-key",
-    type=click.Choice(["id", "link", "title"]),
-    default=None,
-    help="Field used for deduplication.",
-)
-@click.option(
     "--format",
     "fmt",
     type=click.Choice(["text", "html"]),
@@ -268,7 +262,7 @@ def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
     help="Use item publication date as email Date header.",
 )
 @click.pass_context
-def edit(ctx, feed_ref, url, dedup_key, fmt, item_date):
+def edit(ctx, feed_ref, url, fmt, item_date):
     """Edit a feed's configuration.
 
     FEED_REF is the feed URL or numeric Feed_ID.
@@ -285,7 +279,6 @@ def edit(ctx, feed_ref, url, dedup_key, fmt, item_date):
         feed = fm.edit_feed(
             feed_ref=ref,
             url=url,
-            dedup_key=dedup_key,
             format=fmt,
             item_date=item_date,
         )
