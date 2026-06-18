@@ -58,11 +58,13 @@ class FeedFetcher:
 
     def fetch(self, url: str) -> FetchResult:
         """Fetch a feed from the given URL and return parsed items."""
+        logger.debug("Fetching feed: %s", url)
         self._wait_for_host(url)
 
         try:
             text = self._download(url)
         except (RuntimeError, requests.RequestException) as e:
+            logger.info("Fetch failed for %s: %s", url, e)
             return FetchResult(
                 success=False,
                 items=[],
@@ -84,6 +86,7 @@ class FeedFetcher:
 
         items = [self._convert_item(item) for item in feed.items]
         feed_title = feed.title or ""
+        logger.info("Fetched %d items from %s", len(items), url)
 
         return FetchResult(
             success=True,

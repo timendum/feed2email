@@ -1,11 +1,14 @@
 """Email sender using smtplib with support for none/starttls/ssl encryption."""
 
+import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.utils import format_datetime
 from typing import TYPE_CHECKING
 
 from feed2email.models import EmailMessage, SendResult, SmtpConfig
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from feed2email.db import Database
@@ -65,16 +68,25 @@ class EmailSender:
             if message.item_id:
                 msg["X-Feed-Item-ID"] = message.item_id
 
+            logger.debug(
+                "Connecting to %s:%d (%s)",
+                self.config.host,
+                self.config.port,
+                self.config.encryption,
+            )
             connection = self._connect()
             try:
                 if self.config.username and self.config.password:
+                    logger.debug("Authenticating as %s", self.config.username)
                     connection.login(self.config.username, self.config.password)
                 connection.sendmail(self.config.from_address, message.recipient, msg.as_string())
             finally:
                 connection.quit()
 
+            logger.info("Sent email to %s: %s", message.recipient, message.subject)
             return SendResult(success=True)
         except (RuntimeError, OSError) as e:
+            logger.info("Failed to send email to %s: %s", message.recipient, e)
             return SendResult(success=False, error=str(e))
 
     def _connect(self) -> smtplib.SMTP | smtplib.SMTP_SSL:

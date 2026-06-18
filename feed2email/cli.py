@@ -14,6 +14,8 @@ from feed2email.models import VALID_CONFIG_KEYS
 # Commands that do NOT require setup to be complete.
 _EXEMPT_COMMANDS = ("config", "init")
 
+logger = logging.getLogger(__name__)
+
 
 @click.group()
 @click.option(
@@ -23,13 +25,25 @@ _EXEMPT_COMMANDS = ("config", "init")
     default=None,
     help="Path to the SQLite database file (overrides FEED2EMAIL_DB env var).",
 )
-@click.option("--verbose", "-v", is_flag=True, default=False, help="Enable verbose output.")
+@click.option("--verbose", "-v", count=True, help="Increase verbosity.")
 @click.pass_context
 def cli(ctx, db, verbose):
     """feed2email - Monitor RSS/Atom feeds and deliver new items via email."""
     ctx.ensure_object(dict)
     ctx.obj["db_path"] = Path(db) if db else None
     ctx.obj["verbose"] = verbose
+
+
+def _setup_log(ctx: click.Context) -> None:
+    verbosity = ctx.obj.get("verbose", 0)
+    match verbosity:
+        case 0:
+            log_level = logging.WARNING
+        case 1:
+            log_level = logging.INFO
+        case _:
+            log_level = logging.DEBUG
+    logging.basicConfig(level=log_level, format="%(message)s")
 
 
 def _get_database(ctx: click.Context) -> Database:
@@ -227,6 +241,7 @@ def add(ctx, url, recipient, dedup_key, fmt, item_date, mark_read):
     the most recent one are marked as read so you receive only the latest item
     on the next run. Use --mark-read to mark ALL items as read instead.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -269,6 +284,7 @@ def edit(ctx, feed_ref, url, fmt, item_date):
 
     At least one option must be provided. Only the specified fields are changed.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -297,6 +313,7 @@ def remove(ctx, feed_ref):
 
     FEED_REF is the feed URL or numeric Feed_ID.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -317,6 +334,7 @@ def remove(ctx, feed_ref):
 @click.pass_context
 def list_feeds(ctx):
     """List all configured feeds."""
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -344,6 +362,7 @@ def pause(ctx, feed_ref):
 
     FEED_REF is the feed URL or numeric Feed_ID.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -367,6 +386,7 @@ def unpause(ctx, feed_ref):
 
     FEED_REF is the feed URL or numeric Feed_ID.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
     db = _get_database(ctx)
     try:
@@ -393,11 +413,10 @@ def run(ctx, dry_run):
     With --dry-run, display what would be sent without actually sending
     emails or recording items as seen.
     """
+    _setup_log(ctx)
     _setup_guard(ctx)
 
-    verbose = ctx.obj.get("verbose", False)
-    log_level = logging.INFO if verbose else logging.WARNING
-    logging.basicConfig(level=log_level, format="%(message)s")
+    logger.info("Starting run%s", " (dry-run)" if dry_run else "")
 
     db = _get_database(ctx)
     try:
@@ -407,10 +426,20 @@ def run(ctx, dry_run):
             click.echo("No feeds configured.")
             sys.exit(0)
 
+        logger.info("Processing %d feed(s)", len(feeds))
+
         from feed2email.runner import Runner
 
         runner = Runner(db=db, dry_run=dry_run)
         result = runner.run()
+
+        logger.info(
+            "Done: %d feeds processed, %d failed, %d items sent, %d items failed",
+            result.feeds_processed,
+            result.feeds_failed,
+            result.items_sent,
+            result.items_failed,
+        )
 
         exit_code = runner.compute_exit_code(result)
         sys.exit(exit_code)

@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from datetime import datetime
 from importlib.resources import files
@@ -6,6 +7,8 @@ from pathlib import Path
 import platformdirs
 
 from feed2email.models import Feed
+
+logger = logging.getLogger(__name__)
 
 
 def _default_db_path() -> Path:
@@ -25,6 +28,7 @@ class Database:
             If None, uses the platform default user data directory.
         """
         self.path: Path = path if path is not None else _default_db_path()
+        logger.debug("DB Path=%s", self.path)
         self._lock_conn: sqlite3.Connection | None = None
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
