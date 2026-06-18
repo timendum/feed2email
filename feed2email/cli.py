@@ -48,9 +48,13 @@ def _setup_log(ctx: click.Context) -> None:
 
 def _get_database(ctx: click.Context) -> Database:
     """Create and initialize a Database instance from the context."""
+    if "db" in ctx.obj:
+        return ctx.obj["db"]
+
     db_path = ctx.obj["db_path"]
     db = Database(path=db_path)
     db.initialize()
+    ctx.obj["db"] = db
     return db
 
 
@@ -65,14 +69,9 @@ def _setup_guard(ctx: click.Context) -> None:
         return
 
     db = _get_database(ctx)
-    try:
-        cm = ConfigManager(db)
-        if not cm.is_setup_complete():
-            raise click.ClickException(
-                "Setup is incomplete\nRun 'feed2email init' to complete setup."
-            )
-    finally:
-        db.close()
+    cm = ConfigManager(db)
+    if not cm.is_setup_complete():
+        raise click.ClickException("Setup is incomplete\nRun 'feed2email init' to complete setup.")
 
 
 @cli.command()
