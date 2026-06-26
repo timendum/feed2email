@@ -39,13 +39,20 @@ _HTML_TEMPLATE = """\
 class TemplateRenderer:
     """Renders feed items into email bodies using Jinja2 templates."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        subject_template: str | None = None,
+        body_template: str | None = None,
+    ) -> None:
         self._text_env = Environment(autoescape=False)  # noqa: S701 - plain text output, no XSS risk
         self._html_env = Environment(autoescape=True)
 
-        self._subject_template = self._text_env.from_string(_SUBJECT_TEMPLATE)
-        self._text_template = self._text_env.from_string(_PLAIN_TEXT_TEMPLATE)
-        self._html_template = self._html_env.from_string(_HTML_TEMPLATE)
+        self._subject_template = self._text_env.from_string(subject_template or _SUBJECT_TEMPLATE)
+
+        # Custom body template replaces both text and html built-ins
+        self._custom_body_source = body_template
+        self._text_template = self._text_env.from_string(body_template or _PLAIN_TEXT_TEMPLATE)
+        self._html_template = self._html_env.from_string(body_template or _HTML_TEMPLATE)
 
     def render_body(
         self,

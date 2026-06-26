@@ -108,3 +108,38 @@ class TestSmtp:
     def test_user_agent_stored_and_retrieved(self, config_mgr: ConfigManager) -> None:
         config_mgr.set("user-agent", "CustomAgent/2.0")
         assert config_mgr.get("user-agent") == "CustomAgent/2.0"
+
+
+class TestTemplateConfig:
+    def test_template_subject_valid(self, config_mgr: ConfigManager) -> None:
+        assert config_mgr.validate_value("template.subject", "{{ title }}") == (True, None)
+        assert config_mgr.validate_value("template.subject", "[{{ feed_title }}] {{ title }}") == (
+            True,
+            None,
+        )
+
+    def test_template_subject_invalid_syntax(self, config_mgr: ConfigManager) -> None:
+        is_valid, error = config_mgr.validate_value("template.subject", "{{ title")
+        assert is_valid is False
+        assert error is not None
+        assert "Jinja2" in error
+
+    def test_template_body_valid(self, config_mgr: ConfigManager) -> None:
+        assert config_mgr.validate_value(
+            "template.body", "{{ title }}\n{{ link }}\n{{ body }}"
+        ) == (True, None)
+
+    def test_template_body_invalid_syntax(self, config_mgr: ConfigManager) -> None:
+        is_valid, error = config_mgr.validate_value("template.body", "{% if %}")
+        assert is_valid is False
+        assert error is not None
+        assert "Jinja2" in error
+
+    def test_template_subject_stored_and_retrieved(self, config_mgr: ConfigManager) -> None:
+        config_mgr.set("template.subject", "[{{ feed_title }}] {{ title }}")
+        assert config_mgr.get("template.subject") == "[{{ feed_title }}] {{ title }}"
+
+    def test_template_body_stored_and_retrieved(self, config_mgr: ConfigManager) -> None:
+        tpl = "{{ title }}\n{{ body }}"
+        config_mgr.set("template.body", tpl)
+        assert config_mgr.get("template.body") == tpl

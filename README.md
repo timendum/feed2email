@@ -80,7 +80,7 @@ feed2email add https://example.com/rss.xml \
 
 Required keys: `smtp.host`, `smtp.port`, `smtp.from`, `smtp.encryption`, `default-recipient`.
 
-Optional keys: `smtp.user`, `smtp.password`, `user-agent`, `retry.max`, `retry.backoff`, `host-delay`.
+Optional keys: `smtp.user`, `smtp.password`, `user-agent`, `retry.max`, `retry.backoff`, `host-delay`, `template.subject`, `template.body`.
 
 ```sh
 feed2email config smtp.host mail.example.com
@@ -113,6 +113,48 @@ feed2email config host-delay 2      # wait 2 seconds between requests to the sam
 feed2email config host-delay 0.5    # fractional seconds are supported
 feed2email config host-delay 0      # disable (default)
 ```
+
+#### Custom templates
+
+You can override the default email subject and body templates using Jinja2 syntax.
+
+Available template variables: `title`, `link`, `date`, `feed_id`, `feed_title`, `feed_url`, `body` (body is only available in the body template).
+
+```sh
+# Custom subject line
+feed2email config template.subject "[{{ feed_title }}] {{ title }}"
+
+# Custom body template
+feed2email config template.body "{{ title }} - {{ link }}"
+
+# Reset to defaults
+feed2email config template.subject --unset
+feed2email config template.body --unset
+```
+
+For multi-line body templates, use `$'...'` syntax in bash (ANSI-C quoting) to include literal newlines:
+
+```sh
+feed2email config template.body $'{{ title }}\n{{ link }}\n\n{{ body }}\n\n---\nVia {{ feed_title }}'
+```
+
+Or in PowerShell, use a here-string or backtick-n:
+
+```powershell
+feed2email config template.body "{{ title }}`n{{ link }}`n`n{{ body }}`n`n---`nVia {{ feed_title }}"
+```
+
+You can also load a template from a file using command substitution:
+
+```sh
+# bash
+feed2email config template.body "$(cat my-template.txt)"
+
+# PowerShell
+feed2email config template.body (Get-Content -Raw my-template.txt)
+```
+
+The body template is used for both `text` and `html` format feeds. When rendering in HTML mode, the `body` variable contains sanitized HTML and autoescaping is enabled.
 
 ### Changing the dedup key
 

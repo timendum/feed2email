@@ -26,7 +26,10 @@ class Runner:
         self._db = db
         self._dry_run = dry_run
         self._fetcher = fetcher or FeedFetcher.from_db(db)
-        self._renderer = renderer or TemplateRenderer()
+        self._renderer = renderer or TemplateRenderer(
+            subject_template=db.get_config("template.subject"),
+            body_template=db.get_config("template.body"),
+        )
         self._mailer = mailer or EmailSender.from_db(db)
 
     def run(self) -> RunResult:

@@ -224,5 +224,108 @@ class TestRenderBody:
         assert str(item.link) in result
 
 
+class TestCustomSubjectTemplate:
+    """Tests for custom subject templates."""
+
+    def test_custom_subject_template(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(subject_template="[{{ feed_title }}] {{ title }}")
+        item = FeedItem(
+            id="1",
+            title="My Article",
+            link="http://example.com",
+            content=None,
+            published=None,
+        )
+        subject = renderer.make_subject(item, sample_feed, "Tech News")
+        assert subject == "[Tech News] My Article"
+
+    def test_custom_subject_with_feed_url(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(subject_template="{{ title }} ({{ feed_url }})")
+        item = FeedItem(
+            id="1",
+            title="Hello",
+            link=None,
+            content=None,
+            published=None,
+        )
+        subject = renderer.make_subject(item, sample_feed)
+        assert subject == "Hello (http://example.com/feed)"
+
+    def test_custom_subject_still_truncates(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(subject_template="{{ title }}")
+        item = FeedItem(
+            id="1",
+            title="A" * 300,
+            link=None,
+            content=None,
+            published=None,
+        )
+        subject = renderer.make_subject(item, sample_feed)
+        assert len(subject) == 255
+
+
+class TestCustomBodyTemplate:
+    """Tests for custom body templates."""
+
+    def test_custom_body_template_text(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(body_template="ITEM: {{ title }}\n{{ body }}")
+        item = FeedItem(
+            id="1",
+            title="Test",
+            link="http://example.com",
+            content="Hello world",
+            published=None,
+        )
+        result = renderer.render_body(item, sample_feed, "Feed", "text")
+        assert result == "ITEM: Test\nHello world"
+
+    def test_custom_body_template_html(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(body_template="<p>{{ title }}: {{ body }}</p>")
+        item = FeedItem(
+            id="1",
+            title="Test",
+            link=None,
+            content="<b>Bold</b>",
+            published=None,
+        )
+        result = renderer.render_body(item, sample_feed, "Feed", "html")
+        # HTML body is sanitized via nh3 then rendered with autoescaping
+        assert "Test" in result
+        assert "<b>Bold</b>" in result
+
+    def test_custom_body_uses_all_context_variables(self, sample_feed: Feed) -> None:
+        tpl = "{{ title }}|{{ link }}|{{ date }}|{{ feed_title }}|{{ feed_url }}|{{ body }}"
+        renderer = TemplateRenderer(body_template=tpl)
+        item = FeedItem(
+            id="1",
+            title="Title",
+            link="http://example.com/post",
+            content="Content",
+            published=datetime(2024, 6, 15, 12, 0, 0, tzinfo=UTC),
+        )
+        result = renderer.render_body(item, sample_feed, "My Feed", "text")
+        assert "Title" in result
+        assert "http://example.com/post" in result
+        assert "2024-06-15 12:00:00" in result
+        assert "My Feed" in result
+        assert "http://example.com/feed" in result
+        assert "Content" in result
+
+    def test_default_templates_when_none_provided(self, sample_feed: Feed) -> None:
+        renderer = TemplateRenderer(subject_template=None, body_template=None)
+        item = FeedItem(
+            id="1",
+            title="Test",
+            link="http://example.com",
+            content="Body",
+            published=None,
+        )
+        # Should behave identically to default renderer
+        assert renderer.make_subject(item, sample_feed) == "Test"
+        body = renderer.render_body(item, sample_feed, "Feed", "text")
+        assert "Test" in body
+        assert "Feed" in body
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

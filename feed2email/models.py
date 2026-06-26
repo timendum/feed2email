@@ -21,6 +21,8 @@ VALID_CONFIG_KEYS = (
     "retry.max",
     "retry.backoff",
     "host-delay",
+    "template.subject",
+    "template.body",
 )
 
 

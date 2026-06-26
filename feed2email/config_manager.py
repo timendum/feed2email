@@ -80,6 +80,14 @@ class ConfigManager:
                     return False, "Host delay must be a number >= 0 (seconds)"
                 if f < 0:
                     return False, "Host delay must be a number >= 0 (seconds)"
+            case "template.subject" | "template.body":
+                from jinja2 import Environment, TemplateSyntaxError  # noqa: PLC0415
+
+                env = Environment(autoescape=False)  # noqa: S701
+                try:
+                    env.parse(value)
+                except TemplateSyntaxError as e:
+                    return False, f"Invalid Jinja2 template: {e}"
 
         return True, None
 
